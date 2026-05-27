@@ -27,6 +27,14 @@ document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => card.classList.toggle('flipped'));
 });
 
+// ===== QUICK REFERENCE TOGGLE =====
+document.getElementById('ref-toggle').addEventListener('click', function() {
+  const grid = document.getElementById('ref-grid');
+  const isHidden = grid.hidden;
+  grid.hidden = !isHidden;
+  this.textContent = isHidden ? 'Hide Cheat Sheet' : 'Show Cheat Sheet';
+});
+
 // ===== STANDUP SIMULATOR =====
 let standupInterval = null;
 const standupTimer = document.getElementById('standup-timer');
@@ -59,8 +67,8 @@ standupForm.addEventListener('submit', e => {
   const blockers = document.getElementById('su-blockers').value || 'None';
 
   document.getElementById('standup-summary').innerHTML =
-    '<div class="su-item"><div class="su-label">What I did</div><div class="su-text">' + did + '</div></div>' +
-    '<div class="su-item"><div class="su-label">What I\'ll do next</div><div class="su-text">' + next + '</div></div>' +
+    '<div class="su-item"><div class="su-label">Progress toward Sprint Goal</div><div class="su-text">' + did + '</div></div>' +
+    '<div class="su-item"><div class="su-label">Working on next</div><div class="su-text">' + next + '</div></div>' +
     '<div class="su-item"><div class="su-label">Blockers</div><div class="su-text">' + blockers + '</div></div>';
 
   standupForm.hidden = true;
@@ -149,11 +157,33 @@ document.getElementById('sprint-duration').addEventListener('change', function()
 
 // ===== TASK BOARD =====
 const STORAGE_KEY = 'microsprint-board';
-let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+const DEFAULT_TASKS = [
+  { id: 1, text: 'Write the intro paragraph', status: 'todo' },
+  { id: 2, text: 'Design the logo', status: 'todo' },
+  { id: 3, text: 'Test the login flow', status: 'todo' }
+];
+
+let storedData = localStorage.getItem(STORAGE_KEY);
+let tasks = storedData ? JSON.parse(storedData) : DEFAULT_TASKS.map(t => ({...t}));
 let taskIdCounter = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+
+// Save initial default tasks to localStorage if none existed
+if (!storedData) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
 
 function saveTasks() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+function updateEmptyStates() {
+  ['todo', 'progress', 'done'].forEach(status => {
+    const emptyEl = document.getElementById('empty-' + status);
+    if (emptyEl) {
+      const count = tasks.filter(t => t.status === status).length;
+      emptyEl.style.display = count === 0 ? 'block' : 'none';
+    }
+  });
 }
 
 function renderBoard() {
@@ -178,6 +208,7 @@ function renderBoard() {
     });
     document.getElementById('count-' + status).textContent = items.length;
   });
+  updateEmptyStates();
 }
 
 document.querySelectorAll('.board__cards').forEach(col => {
