@@ -276,7 +276,7 @@
   </section>
 
   <!-- PLANNING MODE (items 6,7,9,22,23) -->
-  <section class="section section--alt" id="planning">
+  <section class="section section--alt sprint-only" id="planning">
     <div class="section__inner">
       <span class="section__tag">Step 3 &middot; Planning</span>
       <h2 class="section__title">Sprint Planning</h2>
@@ -303,7 +303,7 @@
   </section>
 
   <!-- SPRINT BOARD (items 2,7,12) -->
-  <section class="section" id="board">
+  <section class="section sprint-only" id="board">
     <div class="section__inner">
       <span class="section__tag">Step 4 &middot; Build</span>
       <h2 class="section__title">Sprint Board</h2>
@@ -313,7 +313,7 @@
   </section>
 
   <!-- STANDUP (items 10,11) -->
-  <section class="section section--alt" id="standup">
+  <section class="section section--alt sprint-only" id="standup">
     <div class="section__inner">
       <span class="section__tag">Step 5 &middot; Check-in</span>
       <h2 class="section__title">Standup</h2>
@@ -330,7 +330,7 @@
   </section>
 
   <!-- FACILITATOR PANEL (item 13) -->
-  <section class="section" id="facilitator">
+  <section class="section sprint-only" id="facilitator">
     <div class="section__inner">
       <span class="section__tag">Scrum Master</span>
       <h2 class="section__title">Facilitator Prompts</h2>
@@ -395,7 +395,7 @@
   <!-- EVENT LOG (item 25) -->
   <section class="section" id="log">
     <div class="section__inner">
-      <button class="theory-toggle" id="log-toggle">Sprint Event Log</button>
+      <button class="theory-toggle" id="log-toggle" aria-expanded="false">Sprint Event Log</button>
       <div id="event-log" class="event-log" hidden></div>
     </div>
   </section>
@@ -403,7 +403,7 @@
   <!-- THEORY DRAWER (item 33,34) -->
   <section class="section section--alt" id="theory">
     <div class="section__inner">
-      <button class="theory-toggle" id="theory-toggle">Why this works: Scrum concepts behind the microsprint</button>
+      <button class="theory-toggle" id="theory-toggle" aria-expanded="false">Why this works: Scrum concepts behind the microsprint</button>
       <div class="theory-body" id="theory-body" hidden>
         <div class="theory-grid">
           <div class="theory-card"><h3>Sprint Goal</h3><p>One clear objective keeps two cofounders aligned. If it doesn't serve the goal, cut it.</p></div>
@@ -422,7 +422,7 @@
   </footer>
 
   <!-- FULLSCREEN TIMER MODAL -->
-  <div class="timer-modal" id="timer-modal" aria-hidden="true">
+  <div class="timer-modal" id="timer-modal" aria-hidden="true" role="dialog" aria-labelledby="tm-phase">
     <div class="timer-modal__backdrop" id="timer-modal-backdrop"></div>
     <div class="timer-modal__content">
       <button class="timer-modal__close" id="timer-modal-close" aria-label="Close timer modal">&#10005; Close</button>

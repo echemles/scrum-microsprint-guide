@@ -28,7 +28,7 @@ strong{color:var(--white);font-weight:600}
 @keyframes blink{50%{opacity:.4}}
 .topbar__right{display:flex;align-items:center;gap:8px}
 .topbar__roles{font-size:.75rem;color:var(--text-dim)}
-.topbar__btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.7rem;color:var(--text);transition:all .15s}
+.topbar__btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.7rem;color:var(--text);transition:all .15s}
 .topbar__btn:hover{border-color:var(--indigo);color:var(--white)}
 .topbar__btn--danger:hover{border-color:var(--rose);color:var(--rose)}
 .topbar__progress{height:2px;background:var(--bg3)}
@@ -76,7 +76,7 @@ body.sprint-active .header{top:42px}
 .roles-setup__field{display:flex;flex-direction:column;gap:3px}
 .roles-setup__field label{font-size:.65rem;font-weight:600;color:var(--text-dim);letter-spacing:.03em}
 .roles-setup__field input{padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text)}
-.roles-setup__field input:focus{outline:none;border-color:var(--indigo)}
+.roles-setup__field input:focus{border-color:var(--indigo)}
 
 .hero__cta{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--indigo);color:var(--white);font-weight:700;font-size:.9rem;border-radius:100px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s;margin-top:8px}
 .hero__cta:hover{transform:translateY(-2px);box-shadow:0 6px 24px var(--indigo-glow)}
@@ -104,7 +104,8 @@ body.sprint-active .header{top:42px}
 .contract__field{display:flex;flex-direction:column;gap:3px}
 .contract__field label{font-size:.7rem;font-weight:600;color:var(--white);letter-spacing:.03em}
 .contract__field input,.contract__field textarea,.contract__field select{padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text);resize:none;transition:border-color .2s}
-.contract__field input:focus,.contract__field textarea:focus{outline:none;border-color:var(--indigo)}
+.contract__field input:focus,.contract__field textarea:focus{border-color:var(--indigo)}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
 .contract__field input::placeholder,.contract__field textarea::placeholder{color:var(--text-dim)}
 .dod-preset{margin-top:-4px}
 
@@ -161,7 +162,7 @@ body.sprint-active .header{top:42px}
 .task-card__actions .del-btn:hover{color:var(--rose);border-color:var(--rose)}
 .board-add{display:flex;gap:6px;flex-wrap:wrap}
 .board-add__input{flex:1;min-width:160px;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text)}
-.board-add__input:focus{outline:none;border-color:var(--indigo)}
+.board-add__input:focus{border-color:var(--indigo)}
 .board-add__input::placeholder{color:var(--text-dim)}
 .board-add__select{padding:7px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.75rem;color:var(--text)}
 
@@ -239,29 +240,27 @@ body.sprint-active .header{top:42px}
 }
 @media(max-width:480px){.board{grid-template-columns:1fr}}
 
+/* Focus styles (DR-1) */
+:focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; }
+
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
 
-/* ===== LAUNCH TIMER BUTTON ===== */
+/* ===== LAUNCH TIMER BUTTON (DR-13: secondary/outline style) ===== */
 .launch-timer-btn{
   display:inline-flex;align-items:center;gap:8px;
-  padding:16px 36px;margin-top:16px;
-  background:rgba(99,102,241,0.1);
-  color:var(--indigo);font-weight:800;font-size:1.05rem;
-  border:2px solid var(--indigo);border-radius:100px;
+  padding:10px 24px;margin-top:16px;
+  background:transparent;
+  color:var(--indigo);font-weight:600;font-size:.85rem;
+  border:1px solid var(--border);border-radius:100px;
   cursor:pointer;position:relative;z-index:1;
-  transition:transform .2s,box-shadow .2s,background .2s;
-  animation:pulse-border 2.5s ease-in-out infinite;
+  transition:transform .2s,box-shadow .2s,background .2s,border-color .2s;
 }
 .launch-timer-btn:hover{
-  transform:translateY(-3px);
-  box-shadow:0 0 30px var(--indigo-glow),0 0 60px rgba(99,102,241,0.15);
-  background:rgba(99,102,241,0.15);
-}
-@keyframes pulse-border{
-  0%,100%{box-shadow:0 0 8px var(--indigo-glow),0 0 20px rgba(99,102,241,0.08)}
-  50%{box-shadow:0 0 20px var(--indigo-glow),0 0 40px rgba(99,102,241,0.2)}
+  transform:translateY(-2px);
+  border-color:var(--indigo);
+  background:rgba(99,102,241,0.08);
 }
 
 /* ===== BEGINNER GUIDE CARDS ===== */

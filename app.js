@@ -1,16 +1,23 @@
 // ===== STATE =====
-const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
-const SS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const LS = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
+const SS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { console.warn('localStorage write failed:', e); } };
+
+function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
 
 let sprint = LS('ms-sprint') || null;
 let tasks = LS('ms-tasks') || [];
 let history = LS('ms-history') || [];
 let eventLog = LS('ms-log') || [];
 let tid = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+if (!isFinite(tid) || tid < 1) tid = 1;
 let currentMode = sprint?.mode || 'build';
 let timerInterval = null;
 
 function save() { SS('ms-sprint', sprint); SS('ms-tasks', tasks); SS('ms-history', history); SS('ms-log', eventLog); }
+
+function toggleSprintSections() {
+  document.querySelectorAll('.sprint-only').forEach(el => { el.hidden = !sprint; });
+}
 
 // ===== TIMELINES =====
 const TIMELINES = {
@@ -108,7 +115,11 @@ function updateOwnerSelects() {
   const a = document.getElementById('person-a').value || 'Person A';
   const b = document.getElementById('person-b').value || 'Person B';
   [document.getElementById('task-owner'), document.getElementById('su-who')].forEach(sel => {
-    sel.innerHTML = `<option value="">Unassigned</option><option value="${a}">${a}</option><option value="${b}">${b}</option>`;
+    sel.innerHTML = '';
+    [['', 'Unassigned'], [a, a], [b, b]].forEach(([v, t]) => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = t; sel.appendChild(opt);
+    });
   });
 }
 ['person-a', 'person-b'].forEach(id => document.getElementById(id).addEventListener('input', updateOwnerSelects));
@@ -123,8 +134,16 @@ function logEvent(msg) {
 }
 
 document.getElementById('start-sprint-btn').addEventListener('click', () => {
-  const goal = document.getElementById('c-goal').value.trim();
-  if (!goal) { document.getElementById('c-goal').focus(); return; }
+  const goalEl = document.getElementById('c-goal');
+  const goal = goalEl.value.trim();
+  if (!goal) {
+    goalEl.style.borderColor = 'var(--rose)';
+    let err = document.getElementById('goal-error');
+    if (!err) { err = document.createElement('div'); err.id = 'goal-error'; err.style.cssText = 'color:var(--rose);font-size:.75rem;margin-top:4px'; err.textContent = 'Please enter a sprint goal'; goalEl.parentElement.appendChild(err); }
+    goalEl.focus();
+    goalEl.addEventListener('input', () => { goalEl.style.borderColor = ''; document.getElementById('goal-error')?.remove(); }, { once: true });
+    return;
+  }
   sprint = {
     id: 'sp-' + Date.now(),
     mode: currentMode,
@@ -227,13 +246,14 @@ document.getElementById('tb-end').addEventListener('click', () => {
   sprint.phase = 'completed';
   save();
   logEvent('Sprint ended');
+  document.getElementById('tb-phase').textContent = 'Complete — fill in retro below';
   document.getElementById('retro').scrollIntoView({ behavior: 'smooth' });
-  updateTopbar();
 });
 
 // Close & archive (items 29,39)
 document.getElementById('close-sprint-btn').addEventListener('click', () => {
   if (!sprint) return;
+  if (!confirm('Archive this sprint and move unfinished tasks to backlog?')) return;
   sprint.endTime = Date.now();
   sprint.retroNotes = {
     well: document.getElementById('retro-well').value,
@@ -289,9 +309,12 @@ updatePrompt();
 
 function copyBtn(btnId, textId) {
   document.getElementById(btnId).addEventListener('click', function() {
-    navigator.clipboard.writeText(document.getElementById(textId).textContent);
-    this.textContent = 'Copied!'; this.classList.add('copied');
-    setTimeout(() => { this.textContent = btnId.includes('retro') ? 'Copy Report' : 'Copy Prompt'; this.classList.remove('copied'); }, 1200);
+    const btn = this;
+    const label = btnId.includes('retro') ? 'Copy Report' : 'Copy Prompt';
+    navigator.clipboard.writeText(document.getElementById(textId).textContent)
+      .then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); })
+      .catch(() => { btn.textContent = 'Copy failed'; })
+      .finally(() => { setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500); });
   });
 }
 copyBtn('copy-prompt', 'prompt-output');
@@ -319,11 +342,11 @@ function renderPlanning() {
   const sprintTasks = tasks.filter(t => sprint && t.sprintId === sprint.id);
 
   document.getElementById('plan-backlog').innerHTML = backlog.map(t =>
-    `<div class="plan-card"><div class="plan-card__info"><span class="plan-card__type">${t.type}</span><span class="plan-card__title">${t.text}</span>${t.owner ? `<span class="plan-card__owner">${t.owner}</span>` : ''}${t.tooBig ? '<span class="plan-card__toobig">TOO BIG</span>' : ''}</div><div><button data-pull="${t.id}">Pull →</button>${!t.tooBig ? `<button data-toobig="${t.id}">⚠</button>` : ''}</div></div>`
-  ).join('') || '<div style="color:var(--text-dim);font-size:.75rem">No backlog tasks</div>';
+    `<div class="plan-card"><div class="plan-card__info"><span class="plan-card__type">${escHtml(t.type)}</span><span class="plan-card__title">${escHtml(t.text)}</span>${t.owner ? `<span class="plan-card__owner">${escHtml(t.owner)}</span>` : ''}${t.tooBig ? '<span class="plan-card__toobig">TOO BIG</span>' : ''}</div><div>${sprint ? `<button data-pull="${t.id}">Pull →</button>` : ''}${!t.tooBig ? `<button data-toobig="${t.id}">⚠</button>` : ''}</div></div>`
+  ).join('') || `<div style="color:var(--text-dim);font-size:.75rem">${sprint ? 'No backlog tasks' : 'Start a sprint to pull tasks'}</div>`;
 
   document.getElementById('plan-sprint').innerHTML = sprintTasks.map(t =>
-    `<div class="plan-card"><div class="plan-card__info"><span class="plan-card__type">${t.type}</span><span class="plan-card__title">${t.text}</span>${t.owner ? `<span class="plan-card__owner">${t.owner}</span>` : ''}</div><button data-unpull="${t.id}">← Back</button></div>`
+    `<div class="plan-card"><div class="plan-card__info"><span class="plan-card__type">${escHtml(t.type)}</span><span class="plan-card__title">${escHtml(t.text)}</span>${t.owner ? `<span class="plan-card__owner">${escHtml(t.owner)}</span>` : ''}</div><button data-unpull="${t.id}">← Back</button></div>`
   ).join('') || '<div style="color:var(--text-dim);font-size:.75rem">Pull tasks from backlog</div>';
 
   document.getElementById('sprint-count').textContent = sprintTasks.length;
@@ -350,7 +373,8 @@ function checkScope() {
 // ===== BOARD (items 2,12) =====
 function renderBoard() {
   const grid = document.getElementById('board-grid');
-  const sprintTasks = sprint ? tasks.filter(t => t.sprintId === sprint.id) : [];
+  if (!sprint) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)">Start a sprint to activate the board.</div>'; return; }
+  const sprintTasks = tasks.filter(t => t.sprintId === sprint.id);
   grid.innerHTML = BOARD_COLS.map(col => {
     const items = sprintTasks.filter(t => t.col === col);
     return `<div class="board__col"><div class="board__col-header"><span class="board__col-dot" style="background:${COL_COLORS[col]}"></span>${COL_LABELS[col]}<span class="board__col-count">${items.length}</span></div><div class="board__cards">${items.map(t => renderTaskCard(t, col)).join('')}</div></div>`;
@@ -359,10 +383,10 @@ function renderBoard() {
 
 function renderTaskCard(t, col) {
   const ci = BOARD_COLS.indexOf(col);
-  const left = ci > 0 ? `<button data-mv="${t.id}" data-dir="l">←</button>` : '';
-  const right = ci < BOARD_COLS.length - 1 ? `<button data-mv="${t.id}" data-dir="r">→</button>` : '';
-  const blocker = t.blockedReason ? `<span class="task-card__blocker">BLOCKED: ${t.blockedReason}</span>` : '';
-  return `<div class="task-card"><span class="task-card__type">${t.type}</span>${t.text}${t.owner ? `<span class="task-card__owner">${t.owner}</span>` : ''}${blocker}<div class="task-card__actions">${left}${right}<button class="del-btn" data-del="${t.id}">×</button><button data-block="${t.id}">🚫</button></div></div>`;
+  const left = ci > 0 ? `<button data-mv="${t.id}" data-dir="l" aria-label="Move left">←</button>` : '';
+  const right = ci < BOARD_COLS.length - 1 ? `<button data-mv="${t.id}" data-dir="r" aria-label="Move right">→</button>` : '';
+  const blocker = t.blockedReason ? `<span class="task-card__blocker">BLOCKED: ${escHtml(t.blockedReason)}</span>` : '';
+  return `<div class="task-card"><span class="task-card__type">${escHtml(t.type)}</span>${escHtml(t.text)}${t.owner ? `<span class="task-card__owner">${escHtml(t.owner)}</span>` : ''}${blocker}<div class="task-card__actions">${left}${right}<button class="del-btn" data-del="${t.id}" aria-label="Delete task">×</button><button data-block="${t.id}" aria-label="Toggle blocker">🚫</button></div></div>`;
 }
 
 document.getElementById('board-grid').addEventListener('click', e => {
@@ -405,7 +429,7 @@ document.getElementById('su-submit').addEventListener('click', () => {
 function renderStandups() {
   const log = document.getElementById('standup-log');
   const entries = sprint?.standups || [];
-  log.innerHTML = entries.map(e => `<div class="standup-entry"><div class="standup-entry__header">${e.who} · ${new Date(e.time).toLocaleTimeString()}</div><div class="standup-entry__item"><div class="standup-entry__label">Progress</div><div class="standup-entry__text">${e.progress || '—'}</div></div><div class="standup-entry__item"><div class="standup-entry__label">Next</div><div class="standup-entry__text">${e.next || '—'}</div></div>${e.blockers ? `<div class="standup-entry__item"><div class="standup-entry__label">Blockers</div><div class="standup-entry__text">${e.blockers}</div></div>` : ''}</div>`).reverse().join('');
+  log.innerHTML = entries.map(e => `<div class="standup-entry"><div class="standup-entry__header">${escHtml(e.who)} · ${new Date(e.time).toLocaleTimeString()}</div><div class="standup-entry__item"><div class="standup-entry__label">Progress</div><div class="standup-entry__text">${escHtml(e.progress) || '—'}</div></div><div class="standup-entry__item"><div class="standup-entry__label">Next</div><div class="standup-entry__text">${escHtml(e.next) || '—'}</div></div>${e.blockers ? `<div class="standup-entry__item"><div class="standup-entry__label">Blockers</div><div class="standup-entry__text">${escHtml(e.blockers)}</div></div>` : ''}</div>`).reverse().join('');
 }
 
 // ===== FACILITATOR (item 13) =====
@@ -451,12 +475,16 @@ function renderHistory() {
   const carried = allTasks.filter(t => t.col !== 'verified' && t.col !== 'cut').length;
   const blocked = allTasks.filter(t => t.blockedReason).length;
 
-  metrics.innerHTML = `<div class="metric-card"><div class="metric-card__num">${total}</div><div class="metric-card__label">Sprints</div></div><div class="metric-card"><div class="metric-card__num">${done}</div><div class="metric-card__label">Completed</div></div><div class="metric-card"><div class="metric-card__num">${carried}</div><div class="metric-card__label">Carried Over</div></div><div class="metric-card"><div class="metric-card__num">${blocked}</div><div class="metric-card__label">Blockers</div></div>`;
+  if (total === 0) {
+    metrics.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-dim);font-size:.85rem">Complete your first sprint to see metrics here.</div>';
+  } else {
+    metrics.innerHTML = `<div class="metric-card"><div class="metric-card__num">${total}</div><div class="metric-card__label">Sprints</div></div><div class="metric-card"><div class="metric-card__num">${done}</div><div class="metric-card__label">Completed</div></div><div class="metric-card"><div class="metric-card__num">${carried}</div><div class="metric-card__label">Carried Over</div></div><div class="metric-card"><div class="metric-card__num">${blocked}</div><div class="metric-card__label">Blockers</div></div>`;
+  }
 
   document.getElementById('history-list').innerHTML = history.slice().reverse().map(h => {
     const d = h.tasks?.filter(t => t.col === 'verified').length || 0;
     const t = h.tasks?.length || 0;
-    return `<div class="hist-card"><div class="hist-card__left"><div class="hist-card__goal">${h.goal}</div><div class="hist-card__meta">${h.mode} · ${new Date(h.startTime).toLocaleDateString()}</div></div><div class="hist-card__stats"><span class="hist-card__stat--done">${d}✓</span><span>${t} total</span></div></div>`;
+    return `<div class="hist-card"><div class="hist-card__left"><div class="hist-card__goal">${escHtml(h.goal)}</div><div class="hist-card__meta">${escHtml(h.mode)} · ${new Date(h.startTime).toLocaleDateString()}</div></div><div class="hist-card__stats"><span class="hist-card__stat--done">${d}✓</span><span>${t} total</span></div></div>`;
   }).join('') || '<div style="color:var(--text-dim);font-size:.8rem">No sprints yet</div>';
 
   // Next sprint recommendation (item 30)
@@ -471,15 +499,16 @@ function renderHistory() {
 
 // ===== EVENT LOG (item 25) =====
 function renderEventLog() {
-  document.getElementById('event-log').innerHTML = eventLog.map(e => `<div class="log-entry"><span>${new Date(e.time).toLocaleTimeString()}</span> ${e.msg}</div>`).reverse().join('');
+  document.getElementById('event-log').innerHTML = eventLog.map(e => `<div class="log-entry"><span>${new Date(e.time).toLocaleTimeString()}</span> ${escHtml(e.msg)}</div>`).reverse().join('');
 }
-document.getElementById('log-toggle').addEventListener('click', () => { const el = document.getElementById('event-log'); el.hidden = !el.hidden; });
+document.getElementById('log-toggle').addEventListener('click', function() { const el = document.getElementById('event-log'); el.hidden = !el.hidden; this.setAttribute('aria-expanded', !el.hidden); });
 
 // ===== THEORY =====
-document.getElementById('theory-toggle').addEventListener('click', function() { const b = document.getElementById('theory-body'); b.hidden = !b.hidden; this.textContent = b.hidden ? 'Why this works: Scrum concepts behind the microsprint' : 'Hide Scrum concepts'; });
+document.getElementById('theory-toggle').addEventListener('click', function() { const b = document.getElementById('theory-body'); b.hidden = !b.hidden; this.textContent = b.hidden ? 'Why this works: Scrum concepts behind the microsprint' : 'Hide Scrum concepts'; this.setAttribute('aria-expanded', !b.hidden); });
 
 // ===== RENDER ALL =====
 function renderAll() {
+  toggleSprintSections();
   renderTimeline();
   renderPlanning();
   renderBoard();
@@ -581,13 +610,16 @@ function tmTick() {
 function tmOpen() {
   document.getElementById('timer-modal').classList.add('open');
   document.getElementById('timer-modal').setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
   tmRender();
+  setTimeout(() => document.getElementById('timer-modal-close')?.focus(), 100);
 }
 
 function tmClose() {
   document.getElementById('timer-modal').classList.remove('open');
   document.getElementById('timer-modal').setAttribute('aria-hidden', 'true');
-  // Timer persists in background (not reset)
+  document.body.style.overflow = '';
+  document.getElementById('launch-timer-btn')?.focus();
 }
 
 document.getElementById('launch-timer-btn').addEventListener('click', tmOpen);
