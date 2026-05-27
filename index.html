@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Microsprint OS — Run a Claude Code Sprint</title>
+  <title>Microsprint OS — Sprint Cockpit for Cofounders</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,49 +12,76 @@
 <body>
   <div class="grain"></div>
 
+  <!-- SPRINT TOP BAR (item 4) -->
+  <div class="topbar" id="topbar" hidden>
+    <div class="topbar__inner">
+      <div class="topbar__left">
+        <span class="topbar__phase" id="tb-phase">Planning</span>
+        <span class="topbar__goal" id="tb-goal">No goal set</span>
+      </div>
+      <div class="topbar__center">
+        <span class="topbar__timer" id="tb-timer">60:00</span>
+      </div>
+      <div class="topbar__right">
+        <span class="topbar__roles" id="tb-roles"></span>
+        <button class="topbar__btn" id="tb-pause" title="Pause">&#10074;&#10074;</button>
+        <button class="topbar__btn" id="tb-next-phase" title="Next Phase">&#9654;</button>
+        <button class="topbar__btn topbar__btn--danger" id="tb-end" title="End Sprint">&#9632;</button>
+      </div>
+    </div>
+    <div class="topbar__progress"><div class="topbar__progress-fill" id="tb-progress"></div></div>
+  </div>
+
   <header class="header" id="header">
     <nav class="nav">
       <a href="#" class="nav__logo"><span class="nav__logo-icon">&#9678;</span><span>MICROSPRINT OS</span></a>
       <div class="nav__links">
-        <a href="#timeline">Timeline</a>
         <a href="#contract">Contract</a>
         <a href="#prompt">Prompt</a>
+        <a href="#planning">Plan</a>
         <a href="#board">Board</a>
+        <a href="#standup">Standup</a>
         <a href="#review">Review</a>
         <a href="#retro">Retro</a>
+        <a href="#history">History</a>
       </div>
     </nav>
   </header>
 
-  <!-- ===== HERO ===== -->
+  <!-- HERO + MODE SELECT (items 1,5,14,19) -->
   <section class="hero" id="hero">
     <div class="hero__grid-bg"></div>
     <div class="hero__pulse"></div>
     <div class="hero__content">
-      <div class="hero__badge">For Cofounders Building with AI</div>
+      <div class="hero__badge">Sprint Cockpit for Cofounders</div>
       <h1 class="hero__title">Run a Claude Code<br><span class="hero__accent">Microsprint</span></h1>
       <p class="hero__sub">Align with your cofounder, generate the build prompt, track progress, and end with a demo-ready increment.</p>
     </div>
     <div class="modes" id="modes">
-      <button class="mode-card" data-mode="spike">
-        <span class="mode-card__time">30 min</span>
-        <span class="mode-card__name">Spike</span>
-        <span class="mode-card__desc">Explore a question, prototype fast</span>
-      </button>
-      <button class="mode-card mode-card--active" data-mode="build">
-        <span class="mode-card__time">60 min</span>
-        <span class="mode-card__name">Build</span>
-        <span class="mode-card__desc">Ship a focused feature or flow</span>
-      </button>
-      <button class="mode-card" data-mode="ship">
-        <span class="mode-card__time">120 min</span>
-        <span class="mode-card__name">Ship</span>
-        <span class="mode-card__desc">Build, review, polish, and demo</span>
-      </button>
+      <button class="mode-card" data-mode="spike"><span class="mode-card__time">30 min</span><span class="mode-card__name">Spike</span><span class="mode-card__desc">Explore &amp; prototype</span></button>
+      <button class="mode-card mode-card--active" data-mode="build"><span class="mode-card__time">60 min</span><span class="mode-card__name">Build</span><span class="mode-card__desc">Ship a feature</span></button>
+      <button class="mode-card" data-mode="ship"><span class="mode-card__time">120 min</span><span class="mode-card__name">Ship</span><span class="mode-card__desc">Build, polish, demo</span></button>
     </div>
+    <!-- Template presets (item 19) -->
+    <div class="templates" id="templates">
+      <span class="templates__label">Quick start:</span>
+      <button class="templates__btn" data-tpl="impl">Implementation</button>
+      <button class="templates__btn" data-tpl="bugbash">Bug Bash</button>
+      <button class="templates__btn" data-tpl="design">Design Sprint</button>
+      <button class="templates__btn" data-tpl="docs">Docs Sprint</button>
+      <button class="templates__btn" data-tpl="discovery">Customer Discovery</button>
+    </div>
+    <!-- Roles (items 3,14) -->
+    <div class="roles-setup" id="roles-setup">
+      <div class="roles-setup__field"><label>Person A (PM/Dev)</label><input id="person-a" placeholder="e.g., Les"></div>
+      <div class="roles-setup__field"><label>Person B (Scrum Master)</label><input id="person-b" placeholder="e.g., Cofounder"></div>
+      <div class="roles-setup__field"><label>Person A's Project</label><input id="project-a" placeholder="e.g., Recipe App"></div>
+      <div class="roles-setup__field"><label>Person B's Project</label><input id="project-b" placeholder="e.g., Dashboard"></div>
+    </div>
+    <button class="hero__cta" id="start-sprint-btn">Start Sprint</button>
   </section>
 
-  <!-- ===== TIMELINE ===== -->
+  <!-- TIMELINE (item 5) -->
   <section class="section" id="timeline">
     <div class="section__inner">
       <span class="section__tag">Phase Map</span>
@@ -63,55 +90,40 @@
     </div>
   </section>
 
-  <!-- ===== SPRINT CONTRACT ===== -->
+  <!-- SPRINT CONTRACT (items 8,20) -->
   <section class="section section--alt" id="contract">
     <div class="section__inner">
-      <span class="section__tag">Step 1</span>
+      <span class="section__tag">Step 1 &middot; Contract</span>
       <h2 class="section__title">Sprint Contract</h2>
       <p class="section__lead">Align on scope before writing a single line of code.</p>
       <form class="contract" id="contract-form" autocomplete="off">
-        <div class="contract__field">
-          <label for="c-goal">Sprint Goal</label>
-          <input id="c-goal" placeholder="Build a working recipe import flow from URL to structured recipe preview.">
+        <div class="contract__field"><label for="c-goal">Sprint Goal</label><input id="c-goal" placeholder="Build a working recipe import flow from URL to structured preview."></div>
+        <div class="contract__row">
+          <div class="contract__field"><label for="c-goal-a">Person A's Goal</label><input id="c-goal-a" placeholder="Import parser + preview card"></div>
+          <div class="contract__field"><label for="c-goal-b">Person B's Goal</label><input id="c-goal-b" placeholder="Dashboard data binding"></div>
         </div>
         <div class="contract__row">
-          <div class="contract__field">
-            <label for="c-user">User / Customer</label>
-            <input id="c-user" placeholder="Home cooks who save recipes from blogs.">
-          </div>
-          <div class="contract__field">
-            <label for="c-context">Context</label>
-            <input id="c-context" placeholder="We have a Next.js app with a recipe model already.">
-          </div>
+          <div class="contract__field"><label for="c-user">User / Customer</label><input id="c-user" placeholder="Home cooks who save recipes from blogs."></div>
+          <div class="contract__field"><label for="c-context">Context</label><input id="c-context" placeholder="Next.js app with recipe model already."></div>
         </div>
-        <div class="contract__field">
-          <label for="c-nongoals">Non-goals</label>
-          <textarea id="c-nongoals" rows="2" placeholder="Do not build authentication, billing, or a full recipe database."></textarea>
-        </div>
-        <div class="contract__field">
-          <label for="c-dod">Definition of Done</label>
-          <textarea id="c-dod" rows="2" placeholder="User can paste a URL, see extracted recipe fields, and edit the result before saving."></textarea>
-        </div>
+        <div class="contract__field"><label for="c-nongoals">Non-goals</label><textarea id="c-nongoals" rows="2" placeholder="No auth, billing, or full recipe database."></textarea></div>
+        <div class="contract__field"><label for="c-dod">Definition of Done</label><textarea id="c-dod" rows="2" placeholder="User can paste a URL, see extracted recipe, and edit before saving."></textarea></div>
+        <!-- DoD preset (item 20) -->
+        <div class="dod-preset"><button type="button" class="btn btn--outline btn--sm" id="dod-preset-btn">Load microsprint DoD preset</button></div>
         <div class="contract__row">
-          <div class="contract__field">
-            <label for="c-demo">Demo Moment</label>
-            <input id="c-demo" placeholder="We paste one recipe URL and show the parsed result.">
-          </div>
-          <div class="contract__field">
-            <label for="c-risk">Main Risk</label>
-            <input id="c-risk" placeholder="Claude overbuilds the data model or edits unrelated files.">
-          </div>
+          <div class="contract__field"><label for="c-demo">Demo Moment</label><input id="c-demo" placeholder="Paste one URL → show parsed result in app."></div>
+          <div class="contract__field"><label for="c-risk">Main Risk</label><input id="c-risk" placeholder="Claude overbuilds the data model."></div>
         </div>
       </form>
     </div>
   </section>
 
-  <!-- ===== PROMPT GENERATOR ===== -->
+  <!-- PROMPT GENERATOR (item 21) -->
   <section class="section" id="prompt">
     <div class="section__inner">
-      <span class="section__tag">Step 2</span>
+      <span class="section__tag">Step 2 &middot; Prompt</span>
       <h2 class="section__title">Claude Code Prompt</h2>
-      <p class="section__lead">Generated live from your contract. Copy and paste into Claude Code.</p>
+      <p class="section__lead">Generated live from your contract. Copy into Claude Code.</p>
       <div class="prompt-controls">
         <label class="toggle-label"><input type="checkbox" id="strict-toggle"> Strict Mode</label>
         <button class="btn btn--copy" id="copy-prompt">Copy Prompt</button>
@@ -120,29 +132,79 @@
     </div>
   </section>
 
-  <!-- ===== SPRINT BOARD ===== -->
-  <section class="section section--alt" id="board">
+  <!-- PLANNING MODE (items 6,7,9,22,23) -->
+  <section class="section section--alt" id="planning">
     <div class="section__inner">
-      <span class="section__tag">Step 3</span>
-      <h2 class="section__title">Sprint Board</h2>
-      <div class="scope-warn" id="scope-warn" hidden>You may be overscoping this sprint. Cut aggressively to protect the demo.</div>
-      <div class="board" id="board-grid"></div>
+      <span class="section__tag">Step 3 &middot; Planning</span>
+      <h2 class="section__title">Sprint Planning</h2>
+      <p class="section__lead">Pull tasks from the backlog into this sprint. Stay small.</p>
+      <div class="scope-warn" id="scope-warn" hidden>You may be overscoping. Cut aggressively to protect the demo.</div>
+      <div class="planning-cols">
+        <div class="planning-col">
+          <h3 class="planning-col__title">Backlog</h3>
+          <div id="plan-backlog" class="planning-cards"></div>
+        </div>
+        <div class="planning-col planning-col--sprint">
+          <h3 class="planning-col__title">Sprint Backlog <span id="sprint-count">0</span></h3>
+          <div id="plan-sprint" class="planning-cards"></div>
+        </div>
+      </div>
+      <!-- Add task (items 21,22,23) -->
       <div class="board-add">
-        <input type="text" id="task-title" placeholder="Task title" class="board-add__input">
-        <select id="task-type" class="board-add__select">
-          <option>UI</option><option>Bug</option><option>Copy</option><option>Data</option><option>Integration</option><option>Test</option><option>Refactor</option><option>Research</option>
-        </select>
-        <button class="btn btn--primary" id="add-task-btn">Add Task</button>
+        <input type="text" id="task-title" placeholder="Add a task..." class="board-add__input">
+        <select id="task-type" class="board-add__select"><option>UI</option><option>Bug</option><option>Copy</option><option>Data</option><option>Integration</option><option>Test</option><option>Refactor</option><option>Research</option></select>
+        <select id="task-owner" class="board-add__select"><option value="">Unassigned</option></select>
+        <button class="btn btn--primary" id="add-task-btn">Add</button>
       </div>
     </div>
   </section>
 
-  <!-- ===== REVIEW GATE ===== -->
-  <section class="section" id="review">
+  <!-- SPRINT BOARD (items 2,7,12) -->
+  <section class="section" id="board">
     <div class="section__inner">
-      <span class="section__tag">Step 4</span>
+      <span class="section__tag">Step 4 &middot; Build</span>
+      <h2 class="section__title">Sprint Board</h2>
+      <div class="board-dod-banner">A task is DONE when it's complete enough that a teammate could build on it without asking you questions.</div>
+      <div class="board" id="board-grid"></div>
+    </div>
+  </section>
+
+  <!-- STANDUP (items 10,11) -->
+  <section class="section section--alt" id="standup">
+    <div class="section__inner">
+      <span class="section__tag">Step 5 &middot; Check-in</span>
+      <h2 class="section__title">Standup</h2>
+      <p class="section__lead">Quick check-in. Focus on the Sprint Goal.</p>
+      <div class="standup-form">
+        <div class="contract__field"><label for="su-who">Who</label><select id="su-who" class="board-add__select"></select></div>
+        <div class="contract__field"><label for="su-progress">Progress toward Sprint Goal</label><textarea id="su-progress" rows="2" placeholder="Finished the parser, working on preview card..."></textarea></div>
+        <div class="contract__field"><label for="su-next">What I'll work on next</label><textarea id="su-next" rows="2" placeholder="Hook up the save button..."></textarea></div>
+        <div class="contract__field"><label for="su-blockers">Blockers</label><textarea id="su-blockers" rows="2" placeholder="Waiting on API key..."></textarea></div>
+        <button class="btn btn--primary" id="su-submit">Record Standup</button>
+      </div>
+      <div id="standup-log" class="standup-log"></div>
+    </div>
+  </section>
+
+  <!-- FACILITATOR PANEL (item 13) -->
+  <section class="section" id="facilitator">
+    <div class="section__inner">
+      <span class="section__tag">Scrum Master</span>
+      <h2 class="section__title">Facilitator Prompts</h2>
+      <p class="section__lead">Questions the facilitator should ask at each phase.</p>
+      <div id="facilitator-prompts" class="facilitator-grid"></div>
+    </div>
+  </section>
+
+  <!-- REVIEW GATE (items 15,24) -->
+  <section class="section section--alt" id="review">
+    <div class="section__inner">
+      <span class="section__tag">Step 6 &middot; Review</span>
       <h2 class="section__title">Review Gate</h2>
       <p class="section__lead">Done means verified, not just implemented.</p>
+      <div class="contract__field"><label for="r-shipped-desc">What shipped</label><textarea id="r-shipped-desc" rows="2" placeholder="Recipe import with preview card"></textarea></div>
+      <div class="contract__field"><label for="r-demo-link">Demo link / screenshot</label><input id="r-demo-link" placeholder="https://..."></div>
+      <div class="contract__field"><label for="r-feedback">What needs feedback</label><textarea id="r-feedback" rows="2" placeholder="Edge case: paginated recipes"></textarea></div>
       <div class="checklist" id="checklist">
         <label class="check-item"><input type="checkbox"><span>Feature works in the browser</span></label>
         <label class="check-item"><input type="checkbox"><span>Matches the sprint goal</span></label>
@@ -155,31 +217,48 @@
     </div>
   </section>
 
-  <!-- ===== RETRO ===== -->
-  <section class="section section--alt" id="retro">
+  <!-- RETRO + INCREMENT (items 16,17,18,29,40) -->
+  <section class="section" id="retro">
     <div class="section__inner">
-      <span class="section__tag">Step 5</span>
+      <span class="section__tag">Step 7 &middot; Retro</span>
       <h2 class="section__title">After-Action Report</h2>
-      <p class="section__lead">Generate a markdown retro to share or archive.</p>
-      <div class="retro-form" id="retro-form">
-        <div class="contract__field"><label for="r-shipped">What shipped?</label><textarea id="r-shipped" rows="2" placeholder="Recipe URL import with preview card"></textarea></div>
-        <div class="contract__field"><label for="r-notshipped">What did not ship?</label><textarea id="r-notshipped" rows="2" placeholder="Edit-before-save flow (deferred)"></textarea></div>
-        <div class="contract__field"><label for="r-changed">What changed?</label><textarea id="r-changed" rows="2" placeholder="Simplified the parser to handle only 3 recipe schemas"></textarea></div>
-        <div class="contract__row">
-          <div class="contract__field"><label for="r-bugs">Bugs / Risks</label><textarea id="r-bugs" rows="2" placeholder="Parser fails on paginated recipes"></textarea></div>
-          <div class="contract__field"><label for="r-decisions">Decisions made</label><textarea id="r-decisions" rows="2" placeholder="We skipped auth for now"></textarea></div>
-        </div>
-        <div class="contract__field"><label for="r-next">Next sprint candidates</label><textarea id="r-next" rows="2" placeholder="Edit flow, error handling, second schema support"></textarea></div>
+      <div class="retro-form">
+        <div class="contract__field"><label for="retro-well">What went well</label><textarea id="retro-well" rows="2" placeholder="Parser worked first try"></textarea></div>
+        <div class="contract__field"><label for="retro-improve">Improve next sprint</label><textarea id="retro-improve" rows="2" placeholder="Start with a test, not the UI"></textarea></div>
+        <div class="contract__field"><label for="retro-experiment">One process experiment</label><textarea id="retro-experiment" rows="1" placeholder="Try 25-min work blocks with 5-min check-ins"></textarea></div>
+        <div class="contract__field"><label for="retro-actions">Action items (become backlog tasks)</label><textarea id="retro-actions" rows="2" placeholder="Add error handling for failed URLs\nSupport paginated recipes"></textarea></div>
+        <div class="contract__field"><label for="retro-carryover">Carry-over (unfinished work + reason)</label><textarea id="retro-carryover" rows="2" placeholder="Edit-before-save: ran out of time"></textarea></div>
       </div>
       <div class="retro-output-wrap">
         <button class="btn btn--copy" id="copy-retro">Copy Report</button>
+        <button class="btn btn--primary" id="close-sprint-btn">Close Sprint &amp; Archive</button>
         <pre class="prompt-output" id="retro-output"></pre>
       </div>
     </div>
   </section>
 
-  <!-- ===== THEORY DRAWER ===== -->
-  <section class="section" id="theory">
+  <!-- HISTORY + METRICS (items 27,28,30,39) -->
+  <section class="section section--alt" id="history">
+    <div class="section__inner">
+      <span class="section__tag">Metrics</span>
+      <h2 class="section__title">Sprint History</h2>
+      <div class="metrics" id="metrics"></div>
+      <div id="history-list" class="history-list"></div>
+      <!-- Next sprint recommendation (item 30) -->
+      <div class="next-rec" id="next-rec"></div>
+    </div>
+  </section>
+
+  <!-- EVENT LOG (item 25) -->
+  <section class="section" id="log">
+    <div class="section__inner">
+      <button class="theory-toggle" id="log-toggle">Sprint Event Log</button>
+      <div id="event-log" class="event-log" hidden></div>
+    </div>
+  </section>
+
+  <!-- THEORY DRAWER (item 33,34) -->
+  <section class="section section--alt" id="theory">
     <div class="section__inner">
       <button class="theory-toggle" id="theory-toggle">Why this works: Scrum concepts behind the microsprint</button>
       <div class="theory-body" id="theory-body" hidden>
@@ -189,13 +268,14 @@
           <div class="theory-card"><h3>Definition of Done</h3><p>A shared checklist for "finished." Prevents half-built features from piling up.</p></div>
           <div class="theory-card"><h3>Increment</h3><p>The usable output at the end. If you can't demo it, it didn't ship.</p></div>
           <div class="theory-card"><h3>Retrospective</h3><p>Five minutes of honest reflection. What worked, what didn't, what to try next.</p></div>
+          <div class="theory-card"><h3>Microsprint Loop</h3><p>Plan (5 min) → Build (45 min) → Review (5 min) → Retro (5 min). Repeat every hour. Each person takes turns as Scrum Master for the other.</p></div>
         </div>
       </div>
     </div>
   </section>
 
   <footer class="footer">
-    <p>Microsprint OS &mdash; a lightweight sprint cockpit for cofounders building with <a href="https://claude.ai" target="_blank">Claude Code</a>.</p>
+    <p>Microsprint OS &mdash; a sprint cockpit for cofounders building with <a href="https://claude.ai" target="_blank">Claude Code</a>.</p>
   </footer>
 
   <script src="app.js"></script>
