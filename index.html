@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsprint — Master Scrum in One Hour</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain"></div>
+
+  <header class="header" id="header">
+    <nav class="nav">
+      <a href="#" class="nav__logo">
+        <span class="nav__logo-icon">&#9678;</span>
+        <span>MICROSPRINT</span>
+      </a>
+      <div class="nav__links">
+        <a href="#what">Scrum</a>
+        <a href="#team">Team</a>
+        <a href="#sprint">Sprint</a>
+        <a href="#standup">Standup</a>
+        <a href="#board">Try It</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero__grid-bg"></div>
+    <div class="hero__pulse"></div>
+    <div class="hero__content">
+      <div class="hero__badge">Interactive Scrum Guide</div>
+      <h1 class="hero__title">
+        Master Scrum<br><span class="hero__accent">in One Hour</span>
+      </h1>
+      <p class="hero__sub">An interactive guide to sprints, standups, and shipping fast. No prior knowledge needed — just scroll and learn.</p>
+      <a href="#what" class="hero__cta">
+        Start Learning
+        <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 4v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <div class="hero__stats">
+      <div class="hero__stat"><span class="hero__stat-num">4</span><span class="hero__stat-label">Events</span></div>
+      <div class="hero__stat"><span class="hero__stat-num">3</span><span class="hero__stat-label">Roles</span></div>
+      <div class="hero__stat"><span class="hero__stat-num">3</span><span class="hero__stat-label">Artifacts</span></div>
+      <div class="hero__stat"><span class="hero__stat-num">5</span><span class="hero__stat-label">Values</span></div>
+    </div>
+  </section>
+
+  <!-- WHAT IS SCRUM -->
+  <section class="section" id="what">
+    <div class="section__inner">
+      <span class="section__tag">01 / Concept</span>
+      <h2 class="section__title">What is Scrum?</h2>
+      <p class="section__lead">Scrum is a way for small teams to build things in short cycles called <strong>Sprints</strong>, getting feedback each time.</p>
+
+      <div class="cycle">
+        <div class="cycle__ring">
+          <svg viewBox="0 0 300 300" class="cycle__svg">
+            <circle cx="150" cy="150" r="120" fill="none" stroke="rgba(99,102,241,0.15)" stroke-width="2"/>
+            <circle cx="150" cy="150" r="120" fill="none" stroke="var(--indigo)" stroke-width="2" stroke-dasharray="12 8" class="cycle__dash"/>
+          </svg>
+          <div class="cycle__center">The<br><strong>Sprint<br>Cycle</strong></div>
+        </div>
+        <div class="cycle__steps">
+          <div class="cycle__step" style="--i:0">
+            <div class="cycle__step-icon">&#9881;</div>
+            <h3>Plan</h3>
+            <p>Decide what to build this sprint</p>
+          </div>
+          <div class="cycle__step" style="--i:1">
+            <div class="cycle__step-icon">&#9997;</div>
+            <h3>Build</h3>
+            <p>Do the work, check in daily</p>
+          </div>
+          <div class="cycle__step" style="--i:2">
+            <div class="cycle__step-icon">&#10003;</div>
+            <h3>Review</h3>
+            <p>Show what you built, get feedback</p>
+          </div>
+          <div class="cycle__step" style="--i:3">
+            <div class="cycle__step-icon">&#8634;</div>
+            <h3>Improve</h3>
+            <p>Reflect, adapt, repeat</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE TEAM -->
+  <section class="section section--alt" id="team">
+    <div class="section__inner">
+      <span class="section__tag">02 / Roles</span>
+      <h2 class="section__title">The Team</h2>
+      <p class="section__lead">A Scrum Team is small (10 or fewer). Three clear roles, no hierarchy.</p>
+
+      <div class="roles">
+        <div class="role-card" tabindex="0">
+          <div class="role-card__front">
+            <div class="role-card__icon">&#128081;</div>
+            <h3>Product Owner</h3>
+            <p class="role-card__tagline">Decides WHAT to build</p>
+            <span class="role-card__hint">Click to learn more</span>
+          </div>
+          <div class="role-card__back">
+            <h3>Product Owner</h3>
+            <ul>
+              <li>Owns the Product Backlog (master TODO list)</li>
+              <li>Prioritizes what's most valuable</li>
+              <li>Represents the customer/stakeholders</li>
+              <li>Says "yes" or "no" to what gets built</li>
+            </ul>
+          </div>
+        </div>
+        <div class="role-card" tabindex="0">
+          <div class="role-card__front">
+            <div class="role-card__icon">&#128187;</div>
+            <h3>Developers</h3>
+            <p class="role-card__tagline">Build the thing</p>
+            <span class="role-card__hint">Click to learn more</span>
+          </div>
+          <div class="role-card__back">
+            <h3>Developers</h3>
+            <ul>
+              <li>Self-organizing — they decide HOW to work</li>
+              <li>Create the product increment each sprint</li>
+              <li>Cross-functional — have all needed skills</li>
+              <li>Hold each other accountable</li>
+            </ul>
+          </div>
+        </div>
+        <div class="role-card" tabindex="0">
+          <div class="role-card__front">
+            <div class="role-card__icon">&#9889;</div>
+            <h3>Scrum Master</h3>
+            <p class="role-card__tagline">Keeps the process running</p>
+            <span class="role-card__hint">Click to learn more</span>
+          </div>
+          <div class="role-card__back">
+            <h3>Scrum Master</h3>
+            <ul>
+              <li>Facilitates all Scrum events</li>
+              <li>Removes blockers and impediments</li>
+              <li>Coaches the team on Scrum practices</li>
+              <li>Serves the team — a leader, not a boss</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE SPRINT -->
+  <section class="section" id="sprint">
+    <div class="section__inner">
+      <span class="section__tag">03 / Heartbeat</span>
+      <h2 class="section__title">The Sprint</h2>
+      <p class="section__lead">Sprints are the heartbeat of Scrum — fixed-length cycles where ideas become value. Typically 1-4 weeks. Our microsprints: <strong>1 hour</strong>.</p>
+
+      <div class="timeline">
+        <div class="timeline__track"></div>
+        <div class="timeline__item" style="--pos:0%">
+          <div class="timeline__dot timeline__dot--plan"></div>
+          <div class="timeline__card">
+            <span class="timeline__time">0:00 – 0:05</span>
+            <h3>Sprint Planning</h3>
+            <p>Set a Sprint Goal. Pick tasks from the backlog. Answer: <em>"What can we do this hour?"</em></p>
+          </div>
+        </div>
+        <div class="timeline__item" style="--pos:10%">
+          <div class="timeline__dot timeline__dot--work"></div>
+          <div class="timeline__card">
+            <span class="timeline__time">0:05 – 0:50</span>
+            <h3>Do The Work</h3>
+            <p>Heads down. Build, create, execute. Move tasks from TODO to DONE.</p>
+          </div>
+        </div>
+        <div class="timeline__item" style="--pos:80%">
+          <div class="timeline__dot timeline__dot--review"></div>
+          <div class="timeline__card">
+            <span class="timeline__time">0:50 – 0:55</span>
+            <h3>Sprint Review</h3>
+            <p>Show what you built. Get feedback. <em>"Here's what we accomplished."</em></p>
+          </div>
+        </div>
+        <div class="timeline__item" style="--pos:92%">
+          <div class="timeline__dot timeline__dot--retro"></div>
+          <div class="timeline__card">
+            <span class="timeline__time">0:55 – 1:00</span>
+            <h3>Retrospective</h3>
+            <p>What went well? What to improve? Adapt for the next sprint.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAILY STANDUP -->
+  <section class="section section--alt" id="standup">
+    <div class="section__inner">
+      <span class="section__tag">04 / Daily Ritual</span>
+      <h2 class="section__title">The Standup</h2>
+      <p class="section__lead">A 5-minute check-in. Three questions. That's it. Stand up to keep it short.</p>
+
+      <div class="standup">
+        <div class="standup__questions">
+          <div class="standup__q">
+            <span class="standup__q-num">1</span>
+            <div>
+              <h3>What did I do?</h3>
+              <p>Since the last standup</p>
+            </div>
+          </div>
+          <div class="standup__q">
+            <span class="standup__q-num">2</span>
+            <div>
+              <h3>What will I do next?</h3>
+              <p>Before the next standup</p>
+            </div>
+          </div>
+          <div class="standup__q">
+            <span class="standup__q-num">3</span>
+            <div>
+              <h3>Any blockers?</h3>
+              <p>What's in my way?</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="standup__sim">
+          <div class="standup__sim-header">
+            <h3>Standup Simulator</h3>
+            <div class="standup__timer" id="standup-timer">5:00</div>
+          </div>
+          <form class="standup__form" id="standup-form">
+            <div class="standup__field">
+              <label>What did you do?</label>
+              <textarea id="su-did" rows="2" placeholder="I finished the homepage layout..."></textarea>
+            </div>
+            <div class="standup__field">
+              <label>What will you do next?</label>
+              <textarea id="su-next" rows="2" placeholder="I'll work on the contact form..."></textarea>
+            </div>
+            <div class="standup__field">
+              <label>Any blockers?</label>
+              <textarea id="su-blockers" rows="2" placeholder="Waiting on API access..."></textarea>
+            </div>
+            <div class="standup__actions">
+              <button type="button" class="btn btn--outline" id="standup-start">Start Timer</button>
+              <button type="submit" class="btn btn--primary">Submit Standup</button>
+            </div>
+          </form>
+          <div class="standup__result" id="standup-result" hidden>
+            <div class="standup__result-card">
+              <div class="standup__result-header">Your Standup Summary</div>
+              <div id="standup-summary"></div>
+            </div>
+            <button class="btn btn--outline" id="standup-reset">Do Another</button>
+          </div>
+          <div class="standup__tips">
+            <span>Tips:</span> Keep it under 2 min per person &bull; Stand up to stay brief &bull; Focus on the Sprint Goal &bull; Flag blockers — don't solve them here
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARTIFACTS -->
+  <section class="section" id="artifacts">
+    <div class="section__inner">
+      <span class="section__tag">05 / Artifacts</span>
+      <h2 class="section__title">What You Track</h2>
+      <p class="section__lead">Three living documents that keep everyone aligned.</p>
+
+      <div class="artifacts">
+        <div class="artifact">
+          <div class="artifact__icon">&#128220;</div>
+          <h3>Product Backlog</h3>
+          <p class="artifact__tagline">The master TODO list</p>
+          <p>An ordered list of everything that could be built. The Product Owner prioritizes it. Items at the top are the most important.</p>
+          <div class="artifact__badge">Commitment: Product Goal</div>
+        </div>
+        <div class="artifact">
+          <div class="artifact__icon">&#128203;</div>
+          <h3>Sprint Backlog</h3>
+          <p class="artifact__tagline">This sprint's TODO list</p>
+          <p>The tasks selected for this sprint, plus a plan for how to deliver them. Owned by the Developers.</p>
+          <div class="artifact__badge">Commitment: Sprint Goal</div>
+        </div>
+        <div class="artifact">
+          <div class="artifact__icon">&#128230;</div>
+          <h3>Increment</h3>
+          <p class="artifact__tagline">The finished work</p>
+          <p>A usable piece of the product delivered at the end of each sprint. Must meet the Definition of Done.</p>
+          <div class="artifact__badge">Commitment: Definition of Done</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRY A MICROSPRINT -->
+  <section class="section section--alt" id="board">
+    <div class="section__inner">
+      <span class="section__tag">06 / Hands-On</span>
+      <h2 class="section__title">Try a Microsprint</h2>
+      <p class="section__lead">Set a goal, add tasks, start the timer. Experience a real sprint cycle.</p>
+
+      <div class="sprint-dash">
+        <div class="sprint-dash__controls">
+          <div class="sprint-dash__goal-wrap">
+            <label>Sprint Goal</label>
+            <input type="text" id="sprint-goal" placeholder="e.g., Finish the landing page design" class="sprint-dash__goal-input">
+          </div>
+          <div class="sprint-dash__timer-wrap">
+            <select id="sprint-duration" class="sprint-dash__select">
+              <option value="1800">30 min</option>
+              <option value="3600" selected>1 hour</option>
+              <option value="7200">2 hours</option>
+            </select>
+            <div class="sprint-dash__clock" id="sprint-clock">60:00</div>
+            <div class="sprint-dash__phase" id="sprint-phase">Ready to start</div>
+            <div class="sprint-dash__btns">
+              <button class="btn btn--primary" id="sprint-start-btn">Start Sprint</button>
+              <button class="btn btn--outline" id="sprint-reset-btn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sprint-dash__phases" id="phase-bar">
+          <div class="phase-seg phase-seg--plan" data-phase="plan"><span>Plan</span></div>
+          <div class="phase-seg phase-seg--work" data-phase="work"><span>Work</span></div>
+          <div class="phase-seg phase-seg--review" data-phase="review"><span>Review</span></div>
+          <div class="phase-seg phase-seg--retro" data-phase="retro"><span>Retro</span></div>
+        </div>
+
+        <div class="board">
+          <div class="board__col" data-status="todo">
+            <div class="board__col-header">
+              <span class="board__col-dot board__col-dot--todo"></span>
+              TODO
+              <span class="board__col-count" id="count-todo">0</span>
+            </div>
+            <div class="board__cards" id="col-todo"></div>
+            <div class="board__add">
+              <input type="text" id="add-todo" placeholder="+ Add a task" class="board__add-input">
+            </div>
+          </div>
+          <div class="board__col" data-status="progress">
+            <div class="board__col-header">
+              <span class="board__col-dot board__col-dot--progress"></span>
+              IN PROGRESS
+              <span class="board__col-count" id="count-progress">0</span>
+            </div>
+            <div class="board__cards" id="col-progress"></div>
+          </div>
+          <div class="board__col" data-status="done">
+            <div class="board__col-header">
+              <span class="board__col-dot board__col-dot--done"></span>
+              DONE
+              <span class="board__col-count" id="count-done">0</span>
+            </div>
+            <div class="board__cards" id="col-done"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCRUM VALUES -->
+  <section class="section" id="values">
+    <div class="section__inner">
+      <span class="section__tag">07 / Foundation</span>
+      <h2 class="section__title">Scrum Values</h2>
+      <p class="section__lead">Five values that make everything work.</p>
+
+      <div class="values">
+        <div class="value-card" style="--i:0;--hue:250"><div class="value-card__icon">&#127919;</div><h3>Commitment</h3><p>Commit to achieving the sprint goal and supporting each other.</p></div>
+        <div class="value-card" style="--i:1;--hue:30"><div class="value-card__icon">&#128269;</div><h3>Focus</h3><p>Focus on the work of the sprint and the team's goals.</p></div>
+        <div class="value-card" style="--i:2;--hue:190"><div class="value-card__icon">&#128275;</div><h3>Openness</h3><p>Be open about the work and the challenges you face.</p></div>
+        <div class="value-card" style="--i:3;--hue:340"><div class="value-card__icon">&#129309;</div><h3>Respect</h3><p>Respect each other as capable, independent people.</p></div>
+        <div class="value-card" style="--i:4;--hue:150"><div class="value-card__icon">&#9876;</div><h3>Courage</h3><p>Have the courage to do the right thing and tackle tough problems.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK REFERENCE -->
+  <section class="section section--alt" id="ref">
+    <div class="section__inner">
+      <span class="section__tag">08 / Cheat Sheet</span>
+      <h2 class="section__title">Quick Reference</h2>
+
+      <div class="ref-grid">
+        <div class="ref-group">
+          <h3>Roles</h3>
+          <div class="ref-item"><strong>Product Owner</strong> Decides what to build, prioritizes backlog</div>
+          <div class="ref-item"><strong>Developers</strong> Self-organizing team that builds the product</div>
+          <div class="ref-item"><strong>Scrum Master</strong> Facilitates process, removes blockers</div>
+        </div>
+        <div class="ref-group">
+          <h3>Events</h3>
+          <div class="ref-item"><strong>Sprint</strong> Fixed-length cycle (1-4 weeks, or 1 hour in microsprints)</div>
+          <div class="ref-item"><strong>Sprint Planning</strong> Kick off: set the goal, pick the work</div>
+          <div class="ref-item"><strong>Daily Standup</strong> 15-min daily check-in (5 min in microsprints)</div>
+          <div class="ref-item"><strong>Sprint Review</strong> Demo what was built, get feedback</div>
+          <div class="ref-item"><strong>Retrospective</strong> Reflect: what worked, what to improve</div>
+        </div>
+        <div class="ref-group">
+          <h3>Artifacts</h3>
+          <div class="ref-item"><strong>Product Backlog</strong> Ordered master list of all work</div>
+          <div class="ref-item"><strong>Sprint Backlog</strong> Work selected for current sprint + plan</div>
+          <div class="ref-item"><strong>Increment</strong> Usable output delivered each sprint</div>
+        </div>
+        <div class="ref-group">
+          <h3>Key Concepts</h3>
+          <div class="ref-item"><strong>Sprint Goal</strong> The single objective for the sprint</div>
+          <div class="ref-item"><strong>Definition of Done</strong> Shared standard for "finished"</div>
+          <div class="ref-item"><strong>Empiricism</strong> Decide based on what you observe, not theory</div>
+          <div class="ref-item"><strong>Self-Managing</strong> Team decides who does what, when, how</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Based on the <a href="https://scrumguides.org" target="_blank" rel="noopener">2020 Scrum Guide</a> by Ken Schwaber & Jeff Sutherland. This interactive guide is for learning purposes.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
