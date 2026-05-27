@@ -492,6 +492,162 @@ function renderAll() {
   checkScope();
 }
 
+// ===== SCRUM MASTER SCRIPT TOGGLE =====
+document.getElementById('sm-script-toggle')?.addEventListener('click', function() {
+  const b = document.getElementById('sm-script-body');
+  b.hidden = !b.hidden;
+  this.textContent = b.hidden ? 'Scrum Master Script (click to expand)' : 'Scrum Master Script (click to collapse)';
+});
+
+// ===== FULLSCREEN TIMER MODAL =====
+const tmState = {
+  phaseIndex: 0,
+  elapsed: 0,
+  running: false,
+  phases: [
+    { name: 'Plan', duration: 300, tips: ['Pick one clear goal.', 'Choose a tiny sprint backlog.', 'Define what done means.'] },
+    { name: 'Build', duration: 2700, tips: ['Work the smallest useful slice.', 'Keep scope from growing.', 'Capture proof as you go.'] },
+    { name: 'Review', duration: 300, tips: ['Demo the increment.', 'Show output, not effort.', 'Decide what feedback changes next.'] },
+    { name: 'Retro', duration: 300, tips: ['Name one thing that worked.', 'Name one thing that slowed you down.', 'Choose one change for the next hour.'] }
+  ]
+};
+let tmInterval = null;
+
+function tmCurrentPhase() { return tmState.phases[tmState.phaseIndex]; }
+function tmTotalDuration() { return tmState.phases.reduce((s, p) => s + p.duration, 0); }
+function tmElapsedBefore() { return tmState.phases.slice(0, tmState.phaseIndex).reduce((s, p) => s + p.duration, 0); }
+
+function tmFormatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function tmRender() {
+  const phase = tmCurrentPhase();
+  const remaining = Math.max(0, phase.duration - tmState.elapsed);
+
+  // Countdown
+  document.getElementById('tm-countdown').textContent = tmFormatTime(remaining);
+
+  // Phase pill
+  const pill = document.getElementById('tm-phase-pill');
+  pill.textContent = phase.name;
+  pill.dataset.phase = phase.name.toLowerCase();
+
+  // Phase progress
+  const phasePct = phase.duration > 0 ? Math.min(100, (tmState.elapsed / phase.duration) * 100) : 0;
+  document.getElementById('tm-phase-progress').style.width = phasePct + '%';
+
+  // Total progress
+  const totalElapsed = tmElapsedBefore() + tmState.elapsed;
+  const totalPct = Math.min(100, (totalElapsed / tmTotalDuration()) * 100);
+  document.getElementById('tm-total-progress').style.width = totalPct + '%';
+
+  // Phase buttons
+  document.querySelectorAll('.tm-phase-btn').forEach((btn, i) => {
+    btn.classList.remove('tm-phase-btn--active', 'tm-phase-btn--completed');
+    if (i === tmState.phaseIndex) btn.classList.add('tm-phase-btn--active');
+    else if (i < tmState.phaseIndex) btn.classList.add('tm-phase-btn--completed');
+  });
+
+  // Start/Pause visibility
+  document.getElementById('tm-start').hidden = tmState.running;
+  document.getElementById('tm-pause').hidden = !tmState.running;
+  document.getElementById('tm-start').textContent = tmState.elapsed > 0 ? 'Resume' : 'Start';
+
+  // Tips
+  const tipsEl = document.getElementById('tm-tips');
+  tipsEl.innerHTML = phase.tips.map(t => `<div class="timer-modal__tip">${t}</div>`).join('');
+}
+
+function tmTick() {
+  if (!tmState.running) return;
+  tmState.elapsed++;
+  const phase = tmCurrentPhase();
+  if (tmState.elapsed >= phase.duration) {
+    // Auto-advance
+    if (tmState.phaseIndex < tmState.phases.length - 1) {
+      tmState.phaseIndex++;
+      tmState.elapsed = 0;
+    } else {
+      tmState.running = false;
+      if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
+    }
+  }
+  tmRender();
+}
+
+function tmOpen() {
+  document.getElementById('timer-modal').classList.add('open');
+  document.getElementById('timer-modal').setAttribute('aria-hidden', 'false');
+  tmRender();
+}
+
+function tmClose() {
+  document.getElementById('timer-modal').classList.remove('open');
+  document.getElementById('timer-modal').setAttribute('aria-hidden', 'true');
+  // Timer persists in background (not reset)
+}
+
+document.getElementById('launch-timer-btn').addEventListener('click', tmOpen);
+document.getElementById('timer-modal-close').addEventListener('click', tmClose);
+document.getElementById('timer-modal-backdrop').addEventListener('click', tmClose);
+
+document.getElementById('tm-start').addEventListener('click', () => {
+  tmState.running = true;
+  if (!tmInterval) tmInterval = setInterval(tmTick, 1000);
+  tmRender();
+});
+
+document.getElementById('tm-pause').addEventListener('click', () => {
+  tmState.running = false;
+  tmRender();
+});
+
+document.getElementById('tm-reset').addEventListener('click', () => {
+  tmState.running = false;
+  tmState.phaseIndex = 0;
+  tmState.elapsed = 0;
+  if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
+  tmRender();
+});
+
+document.getElementById('tm-prev').addEventListener('click', () => {
+  if (tmState.phaseIndex > 0) {
+    tmState.phaseIndex--;
+    tmState.elapsed = 0;
+    tmRender();
+  }
+});
+
+document.getElementById('tm-next').addEventListener('click', () => {
+  if (tmState.phaseIndex < tmState.phases.length - 1) {
+    tmState.phaseIndex++;
+    tmState.elapsed = 0;
+    tmRender();
+  }
+});
+
+document.getElementById('tm-phases').addEventListener('click', e => {
+  const btn = e.target.closest('[data-tmphase]');
+  if (btn) {
+    tmState.phaseIndex = parseInt(btn.dataset.tmphase, 10);
+    tmState.elapsed = 0;
+    tmRender();
+  }
+});
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('timer-modal').classList.contains('open')) {
+    tmClose();
+  }
+});
+
+// Initial render of timer
+tmRender();
+
 // ===== INIT =====
 if (sprint && sprint.phase !== 'completed') {
   activateSprint();

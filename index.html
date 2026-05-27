@@ -79,6 +79,7 @@
       <div class="roles-setup__field"><label>Person B's Project</label><input id="project-b" placeholder="e.g., Dashboard"></div>
     </div>
     <button class="hero__cta" id="start-sprint-btn">Start Sprint</button>
+    <button class="launch-timer-btn" id="launch-timer-btn" aria-label="Launch standalone microsprint timer">Launch Timer</button>
   </section>
 
   <!-- TIMELINE (item 5) -->
@@ -87,6 +88,148 @@
       <span class="section__tag">Phase Map</span>
       <h2 class="section__title">Sprint Timeline</h2>
       <div class="tl" id="tl"></div>
+    </div>
+  </section>
+
+  <!-- BEGINNER GUIDE -->
+  <section class="section section--alt" id="beginner-guide">
+    <div class="section__inner">
+      <span class="section__tag">New to Scrum?</span>
+      <h2 class="section__title">How to run this with no Scrum experience</h2>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card__icon">&#127919;</div>
+          <h3 class="guide-card__title">Sprint Goal</h3>
+          <p class="guide-card__desc">The one thing this hour is for. Everything you do serves this goal or gets cut.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card__icon">&#128203;</div>
+          <h3 class="guide-card__title">Sprint Backlog</h3>
+          <p class="guide-card__desc">The tiny list you commit to. Not a wishlist &mdash; a contract with yourself.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card__icon">&#9989;</div>
+          <h3 class="guide-card__title">Definition of Done</h3>
+          <p class="guide-card__desc">The checklist that prevents fake-done. If it doesn't pass, it's not done.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card__icon">&#128230;</div>
+          <h3 class="guide-card__title">Increment</h3>
+          <p class="guide-card__desc">The usable thing produced. If you can't demo it, it didn't ship.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card__icon">&#128260;</div>
+          <h3 class="guide-card__title">Retro</h3>
+          <p class="guide-card__desc">The improvement loop. Five minutes of honesty that makes the next sprint better.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TWO-COFOUNDER OPERATING MODEL -->
+  <section class="section" id="cofounder-model">
+    <div class="section__inner">
+      <span class="section__tag">Operating Model</span>
+      <h2 class="section__title">Two-Cofounder Operating Model</h2>
+      <p class="section__lead">Each founder owns their product work. The other acts as scrum master. Switch every sprint.</p>
+      <div class="cofounder-cols">
+        <div class="cofounder-col">
+          <div class="cofounder-col__header cofounder-col__header--a">Role A: Builder</div>
+          <ul class="cofounder-col__list">
+            <li>Owns the sprint goal for their project</li>
+            <li>Writes code / creates deliverables</li>
+            <li>Demos the increment at review</li>
+            <li>Reports blockers honestly</li>
+          </ul>
+        </div>
+        <div class="cofounder-col">
+          <div class="cofounder-col__header cofounder-col__header--b">Role B: Scrum Master</div>
+          <ul class="cofounder-col__list">
+            <li>Keeps the sprint on track (time + scope)</li>
+            <li>Asks the facilitator questions at each phase</li>
+            <li>Flags scope creep early</li>
+            <li>Runs the review and retro</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cofounder-switch">Switch roles each microsprint. Both founders must own a deliverable.</div>
+    </div>
+  </section>
+
+  <!-- SCRUM MASTER SCRIPT -->
+  <section class="section section--alt" id="sm-script">
+    <div class="section__inner">
+      <button class="theory-toggle" id="sm-script-toggle">Scrum Master Script (click to expand)</button>
+      <div id="sm-script-body" class="sm-script-body" hidden>
+        <div class="sm-script-grid">
+          <div class="sm-script-card">
+            <h3 class="sm-script-card__phase">Plan (0&ndash;5 min)</h3>
+            <ul class="sm-script-card__list">
+              <li>What is the one sprint goal?</li>
+              <li>What 1&ndash;3 tasks will get us there?</li>
+              <li>What does done look like for each?</li>
+              <li>Any blockers we should surface now?</li>
+            </ul>
+          </div>
+          <div class="sm-script-card">
+            <h3 class="sm-script-card__phase">Build (5&ndash;50 min)</h3>
+            <ul class="sm-script-card__list">
+              <li>Are you still on track for the goal?</li>
+              <li>Is scope growing? Cut something.</li>
+              <li>Blocked? Speak up now, not later.</li>
+              <li>Can you demo this yet?</li>
+            </ul>
+          </div>
+          <div class="sm-script-card">
+            <h3 class="sm-script-card__phase">Review (50&ndash;55 min)</h3>
+            <ul class="sm-script-card__list">
+              <li>Show me the working thing.</li>
+              <li>Does it match the sprint goal?</li>
+              <li>What checks did you run?</li>
+              <li>What feedback changes the next sprint?</li>
+            </ul>
+          </div>
+          <div class="sm-script-card">
+            <h3 class="sm-script-card__phase">Retro (55&ndash;60 min)</h3>
+            <ul class="sm-script-card__list">
+              <li>What went well?</li>
+              <li>What slowed you down?</li>
+              <li>One process change for next time?</li>
+              <li>What carries over and why?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMON FAILURE MODES -->
+  <section class="section" id="failure-modes">
+    <div class="section__inner">
+      <span class="section__tag">Watch Out</span>
+      <h2 class="section__title">Common Failure Modes</h2>
+      <div class="failure-cards">
+        <div class="failure-card">
+          <div class="failure-card__label">Too much scope</div>
+          <div class="failure-card__fix">If you can't demo it in the last 10 min, you scoped too big.</div>
+        </div>
+        <div class="failure-card">
+          <div class="failure-card__label">Skipping review</div>
+          <div class="failure-card__fix">No review = no verified output = wasted sprint.</div>
+        </div>
+        <div class="failure-card">
+          <div class="failure-card__label">Skipping retro</div>
+          <div class="failure-card__fix">Without retro, you repeat the same mistakes.</div>
+        </div>
+        <div class="failure-card">
+          <div class="failure-card__label">Confusing activity with output</div>
+          <div class="failure-card__fix">Lines of code &#8800; shipped increment.</div>
+        </div>
+        <div class="failure-card">
+          <div class="failure-card__label">One person dominates</div>
+          <div class="failure-card__fix">Both founders must own a deliverable.</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -277,6 +420,36 @@
   <footer class="footer">
     <p>Microsprint OS &mdash; a sprint cockpit for cofounders building with <a href="https://claude.ai" target="_blank">Claude Code</a>.</p>
   </footer>
+
+  <!-- FULLSCREEN TIMER MODAL -->
+  <div class="timer-modal" id="timer-modal" aria-hidden="true">
+    <div class="timer-modal__backdrop" id="timer-modal-backdrop"></div>
+    <div class="timer-modal__content">
+      <button class="timer-modal__close" id="timer-modal-close" aria-label="Close timer modal">&#10005; Close</button>
+      <div class="timer-modal__phase-pill" id="tm-phase-pill">Plan</div>
+      <div class="timer-modal__countdown" id="tm-countdown">5:00</div>
+      <div class="timer-modal__controls">
+        <button class="timer-modal__ctrl-btn" id="tm-prev" aria-label="Previous phase">&#9664; Prev</button>
+        <button class="timer-modal__ctrl-btn timer-modal__ctrl-btn--primary" id="tm-start" aria-label="Start timer">Start</button>
+        <button class="timer-modal__ctrl-btn timer-modal__ctrl-btn--primary" id="tm-pause" aria-label="Pause timer" hidden>Pause</button>
+        <button class="timer-modal__ctrl-btn" id="tm-reset" aria-label="Reset timer">Reset</button>
+        <button class="timer-modal__ctrl-btn" id="tm-next" aria-label="Next phase">Next &#9654;</button>
+      </div>
+      <div class="timer-modal__phases" id="tm-phases">
+        <button class="tm-phase-btn tm-phase-btn--active" data-tmphase="0" aria-label="Jump to Plan phase">Plan</button>
+        <button class="tm-phase-btn" data-tmphase="1" aria-label="Jump to Build phase">Build</button>
+        <button class="tm-phase-btn" data-tmphase="2" aria-label="Jump to Review phase">Review</button>
+        <button class="tm-phase-btn" data-tmphase="3" aria-label="Jump to Retro phase">Retro</button>
+      </div>
+      <div class="timer-modal__progress-section">
+        <div class="timer-modal__progress-label">Phase progress</div>
+        <div class="timer-modal__progress-bar"><div class="timer-modal__progress-fill" id="tm-phase-progress"></div></div>
+        <div class="timer-modal__progress-label">Total sprint progress</div>
+        <div class="timer-modal__progress-bar timer-modal__progress-bar--total"><div class="timer-modal__progress-fill timer-modal__progress-fill--total" id="tm-total-progress"></div></div>
+      </div>
+      <div class="timer-modal__tips" id="tm-tips"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
