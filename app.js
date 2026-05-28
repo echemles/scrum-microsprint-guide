@@ -504,7 +504,11 @@ function renderEventLog() {
 document.getElementById('log-toggle').addEventListener('click', function() { const el = document.getElementById('event-log'); el.hidden = !el.hidden; this.setAttribute('aria-expanded', !el.hidden); });
 
 // ===== THEORY =====
-document.getElementById('theory-toggle').addEventListener('click', function() { const b = document.getElementById('theory-body'); b.hidden = !b.hidden; this.textContent = b.hidden ? 'Why this works: Scrum concepts behind the microsprint' : 'Hide Scrum concepts'; this.setAttribute('aria-expanded', !b.hidden); });
+// Learn drawer (consolidated educational content)
+document.getElementById('learn-toggle')?.addEventListener('click', function() { const b = document.getElementById('learn-body'); b.hidden = !b.hidden; this.textContent = b.hidden ? 'Learn: Scrum concepts, operating model, failure modes' : 'Hide learning content'; this.setAttribute('aria-expanded', !b.hidden); });
+// Legacy toggles (may not exist in new HTML)
+document.getElementById('theory-toggle')?.addEventListener('click', function() { const b = document.getElementById('theory-body'); if (b) { b.hidden = !b.hidden; this.setAttribute('aria-expanded', !b.hidden); } });
+document.getElementById('sm-script-toggle')?.addEventListener('click', function() { const b = document.getElementById('sm-script-body'); if (b) { b.hidden = !b.hidden; this.setAttribute('aria-expanded', !b.hidden); } });
 
 // ===== RENDER ALL =====
 function renderAll() {
