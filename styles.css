@@ -106,6 +106,50 @@ body:not(.sprint-active) #facilitator{display:none}
 /* LEARN DRAWER */
 .learn-heading{font-size:1rem;font-weight:700;color:var(--white);margin:28px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
 
+/* CONTRACT PAIR (Les + Mattis side-by-side) */
+.contract__pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.contract__person{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.contract__person--les{border-color:rgba(99,102,241,.3)}
+.contract__person--mattis{border-color:rgba(16,185,129,.3)}
+.contract__person-header{font-size:.95rem;font-weight:700;color:var(--white);padding-bottom:8px;border-bottom:1px solid var(--border2)}
+.contract__person--les .contract__person-header{color:var(--indigo)}
+.contract__person--mattis .contract__person-header{color:var(--emerald)}
+
+/* MARKDOWN ARTIFACT LIST */
+.md-list{display:flex;flex-direction:column;gap:12px}
+.md-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.md-card__header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border2)}
+.md-card__title{font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--indigo);letter-spacing:.05em}
+.md-card__body{padding:14px;font-family:var(--mono);font-size:.72rem;line-height:1.7;color:var(--text);white-space:pre-wrap;word-wrap:break-word;max-height:340px;overflow-y:auto;margin:0}
+
+/* HERO PHASE MAP */
+.hero__phase-map{margin-top:32px;width:100%;max-width:700px}
+.hero__phase-map-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;text-align:left}
+
+/* REPORTS MODAL */
+.reports-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.reports-modal.open{display:flex;opacity:1}
+.reports-modal__backdrop{position:absolute;inset:0;background:rgba(5,8,17,.85);backdrop-filter:blur(8px)}
+.reports-modal__content{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:800px;width:90%;max-height:85vh;overflow-y:auto}
+.reports-modal__close{position:absolute;top:16px;right:16px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.75rem;min-height:44px;min-width:44px}
+.reports-modal__close:hover{border-color:var(--rose);color:var(--rose)}
+.reports-modal__title{font-size:1.4rem;font-weight:700;color:var(--white);margin-bottom:20px}
+.reports-modal__body{display:flex;flex-direction:column;gap:16px}
+.report-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
+.report-item__header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.report-item__goal{font-weight:600;color:var(--white);font-size:.95rem}
+.report-item__date{font-family:var(--mono);font-size:.7rem;color:var(--text-dim)}
+.report-item__person{margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)}
+.report-item__person-name{font-size:.7rem;font-weight:600;color:var(--indigo);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.report-item__person--mattis .report-item__person-name{color:var(--emerald)}
+.report-item__field{margin-bottom:6px;font-size:.78rem}
+.report-item__field-label{color:var(--text-dim);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em}
+.report-item__field-text{color:var(--text);white-space:pre-wrap}
+
+@media(max-width:768px){
+  .contract__pair{grid-template-columns:1fr}
+}
+
 /* TIMELINE */
 .tl{display:flex;gap:6px;flex-wrap:wrap}
 .tl__phase{flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;transition:border-color .2s}
@@ -311,7 +355,7 @@ body:not(.sprint-active) #facilitator{display:none}
 .sm-script-card__phase{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--indigo);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
 .sm-script-card__list{list-style:none;display:flex;flex-direction:column;gap:6px}
 .sm-script-card__list li{font-size:.78rem;color:var(--text);padding-left:20px;position:relative}
-.sm-script-card__list li::before{content:'\\25A2';position:absolute;left:0;color:var(--text-dim)}
+.sm-script-card__list li::before{content:'\25A2';position:absolute;left:0;color:var(--text-dim)}
 
 /* ===== FAILURE MODES ===== */
 .failure-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}

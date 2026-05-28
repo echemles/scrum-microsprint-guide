@@ -62,6 +62,11 @@
         <button class="hero__cta" id="start-sprint-btn">Start Sprint</button>
         <button class="launch-timer-btn" id="launch-timer-btn" aria-label="Launch standalone microsprint timer">Launch Timer</button>
       </div>
+
+      <div class="hero__phase-map">
+        <div class="hero__phase-map-label">Phase Map</div>
+        <div class="tl" id="tl"></div>
+      </div>
     </div>
     <a href="#contract" class="scroll-hint">Scroll to set up your sprint</a>
   </section>
@@ -71,30 +76,41 @@
     <div class="vp__inner">
       <span class="section__tag">Step 1</span>
       <h2 class="section__title">Sprint Contract</h2>
+      <p class="section__lead">The one thing this hour is for, then who's doing what.</p>
+
       <form class="contract" id="contract-form" autocomplete="off">
-        <div class="contract__field"><label for="c-goal">Sprint Goal</label><input id="c-goal" placeholder="Build a working recipe import flow from URL to structured preview."></div>
-        <div class="contract__row">
-          <div class="contract__field"><label for="c-user">User / Customer</label><input id="c-user" placeholder="Home cooks who save recipes from blogs."></div>
-          <div class="contract__field"><label for="c-context">Context</label><input id="c-context" placeholder="Next.js app with recipe model already."></div>
+        <div class="contract__field"><label for="c-goal">Shared Sprint Goal</label><input id="c-goal" placeholder="e.g., Demo the recipe import flow end-to-end"></div>
+
+        <div class="contract__pair">
+          <div class="contract__person contract__person--les">
+            <div class="contract__person-header">Les</div>
+            <div class="contract__field"><label for="project-a">Project</label><input id="project-a" placeholder="Recipe App"></div>
+            <div class="contract__field"><label for="c-goal-a">My Goal</label><input id="c-goal-a" placeholder="Import parser + preview card"></div>
+            <div class="contract__field"><label for="c-dod-a">My Definition of Done</label><textarea id="c-dod-a" rows="2" placeholder="Paste URL → see extracted fields → edit before save"></textarea></div>
+          </div>
+
+          <div class="contract__person contract__person--mattis">
+            <div class="contract__person-header">Mattis</div>
+            <div class="contract__field"><label for="project-b">Project</label><input id="project-b" placeholder="Dashboard"></div>
+            <div class="contract__field"><label for="c-goal-b">My Goal</label><input id="c-goal-b" placeholder="Dashboard data binding"></div>
+            <div class="contract__field"><label for="c-dod-b">My Definition of Done</label><textarea id="c-dod-b" rows="2" placeholder="Live data renders in 3 widgets, no flicker on refresh"></textarea></div>
+          </div>
         </div>
-        <div class="contract__field"><label for="c-nongoals">Non-goals</label><textarea id="c-nongoals" rows="2" placeholder="No auth, billing, or full recipe database."></textarea></div>
-        <div class="contract__field"><label for="c-dod">Definition of Done</label><textarea id="c-dod" rows="2" placeholder="User can paste a URL, see extracted recipe, and edit before saving."></textarea></div>
-        <div class="dod-preset"><button type="button" class="btn btn--outline btn--sm" id="dod-preset-btn">Load DoD preset</button></div>
+
         <div class="contract__row">
-          <div class="contract__field"><label for="c-demo">Demo Moment</label><input id="c-demo" placeholder="Paste one URL → show parsed result in app."></div>
-          <div class="contract__field"><label for="c-risk">Main Risk</label><input id="c-risk" placeholder="Claude overbuilds the data model."></div>
+          <div class="contract__field"><label for="c-nongoals">Non-goals (shared)</label><textarea id="c-nongoals" rows="2" placeholder="No auth, billing, refactors"></textarea></div>
+          <div class="contract__field"><label for="c-risk">Main Risk</label><textarea id="c-risk" rows="2" placeholder="Claude overbuilds the data model"></textarea></div>
         </div>
-        <div class="contract__row">
-          <div class="contract__field"><label for="c-goal-a">Person A's Goal</label><input id="c-goal-a" placeholder="Import parser + preview card"></div>
-          <div class="contract__field"><label for="c-goal-b">Person B's Goal</label><input id="c-goal-b" placeholder="Dashboard data binding"></div>
-        </div>
+
+        <!-- Hidden legacy inputs kept for back-compat / prompt generator -->
+        <input type="hidden" id="c-user" value="">
+        <input type="hidden" id="c-context" value="">
+        <input type="hidden" id="c-dod" value="">
+        <input type="hidden" id="c-demo" value="">
+        <input type="hidden" id="person-a" value="Les">
+        <input type="hidden" id="person-b" value="Mattis">
       </form>
-      <div class="roles-setup" id="roles-setup">
-        <div class="roles-setup__field"><label>Person A</label><input id="person-a" placeholder="Les"></div>
-        <div class="roles-setup__field"><label>Person B</label><input id="person-b" placeholder="Cofounder"></div>
-        <div class="roles-setup__field"><label>Project A</label><input id="project-a" placeholder="Recipe App"></div>
-        <div class="roles-setup__field"><label>Project B</label><input id="project-b" placeholder="Dashboard"></div>
-      </div>
+
       <div class="templates">
         <span class="templates__label">Templates:</span>
         <button class="templates__btn" data-tpl="impl">Implementation</button>
@@ -106,26 +122,19 @@
     </div>
   </section>
 
-  <!-- ===== PROMPT (full viewport) ===== -->
+  <!-- ===== PROMPT (markdown artifacts list) ===== -->
   <section class="vp" id="prompt">
     <div class="vp__inner">
       <span class="section__tag">Step 2</span>
-      <h2 class="section__title">Claude Code Prompt</h2>
-      <p class="section__lead">Generated live from your contract. Copy into Claude Code.</p>
+      <h2 class="section__title">Microsprint Markdowns</h2>
+      <p class="section__lead">Each card below is a separate markdown artifact. Copy them into Claude Code, your notes, or wherever you want to annotate them.</p>
       <div class="prompt-controls">
         <label class="toggle-label"><input type="checkbox" id="strict-toggle"> Strict Mode</label>
-        <button class="btn btn--copy" id="copy-prompt">Copy Prompt</button>
+        <button class="btn btn--copy" id="copy-all-md">Copy All</button>
       </div>
-      <pre class="prompt-output" id="prompt-output"></pre>
-    </div>
-  </section>
-
-  <!-- ===== TIMELINE (compact, between prompt and sprint sections) ===== -->
-  <section class="section section--alt" id="timeline">
-    <div class="section__inner">
-      <span class="section__tag">Phase Map</span>
-      <h2 class="section__title">Sprint Timeline</h2>
-      <div class="tl" id="tl"></div>
+      <div class="md-list" id="md-list"></div>
+      <!-- Legacy element kept for prompt generator function -->
+      <pre class="prompt-output" id="prompt-output" hidden></pre>
     </div>
   </section>
 
@@ -212,27 +221,56 @@
     </div>
   </section>
 
-  <!-- ===== RETRO (full viewport) ===== -->
+  <!-- ===== RETRO (full viewport, split Les + Mattis) ===== -->
   <section class="vp section--alt" id="retro">
     <div class="vp__inner">
       <span class="section__tag">Step 6</span>
       <h2 class="section__title">After-Action Report</h2>
-      <div class="retro-form">
-        <div class="contract__row">
-          <div class="contract__field"><label for="retro-well">What went well</label><textarea id="retro-well" rows="2" placeholder="Parser worked first try"></textarea></div>
-          <div class="contract__field"><label for="retro-improve">Improve next</label><textarea id="retro-improve" rows="2" placeholder="Start with a test, not the UI"></textarea></div>
+      <p class="section__lead">Each person fills out their own. Both are archived together.</p>
+
+      <div class="contract__pair">
+        <div class="contract__person contract__person--les">
+          <div class="contract__person-header">Les</div>
+          <div class="contract__field"><label for="retro-well-a">What went well</label><textarea id="retro-well-a" rows="2" placeholder="Parser worked first try"></textarea></div>
+          <div class="contract__field"><label for="retro-improve-a">What to improve</label><textarea id="retro-improve-a" rows="2" placeholder="Start with a test, not the UI"></textarea></div>
+          <div class="contract__field"><label for="retro-actions-a">My action items</label><textarea id="retro-actions-a" rows="2" placeholder="Add error handling"></textarea></div>
+          <div class="contract__field"><label for="retro-carryover-a">Carry-over</label><textarea id="retro-carryover-a" rows="2" placeholder="Edit-before-save: ran out of time"></textarea></div>
         </div>
-        <div class="contract__field"><label for="retro-experiment">One process experiment</label><input id="retro-experiment" placeholder="Try 25-min work blocks"></div>
-        <div class="contract__field"><label for="retro-actions">Action items (become backlog tasks)</label><textarea id="retro-actions" rows="2" placeholder="Add error handling\nSupport paginated recipes"></textarea></div>
-        <div class="contract__field"><label for="retro-carryover">Carry-over</label><textarea id="retro-carryover" rows="2" placeholder="Edit-before-save: ran out of time"></textarea></div>
+
+        <div class="contract__person contract__person--mattis">
+          <div class="contract__person-header">Mattis</div>
+          <div class="contract__field"><label for="retro-well-b">What went well</label><textarea id="retro-well-b" rows="2" placeholder="Dashboard data binding worked"></textarea></div>
+          <div class="contract__field"><label for="retro-improve-b">What to improve</label><textarea id="retro-improve-b" rows="2" placeholder="Cut scope earlier"></textarea></div>
+          <div class="contract__field"><label for="retro-actions-b">My action items</label><textarea id="retro-actions-b" rows="2" placeholder="Add loading states"></textarea></div>
+          <div class="contract__field"><label for="retro-carryover-b">Carry-over</label><textarea id="retro-carryover-b" rows="2" placeholder="Multi-tenant view: deferred"></textarea></div>
+        </div>
       </div>
+
+      <div class="contract__field"><label for="retro-experiment">Shared process experiment (next sprint)</label><input id="retro-experiment" placeholder="Try 25-min work blocks with 5-min check-ins"></div>
+
       <div class="retro-output-wrap">
-        <button class="btn btn--copy" id="copy-retro">Copy Report</button>
+        <button class="btn btn--outline" id="view-reports-btn">View Previous Reports</button>
         <button class="btn btn--primary" id="close-sprint-btn">Close Sprint &amp; Archive</button>
       </div>
-      <pre class="prompt-output" id="retro-output"></pre>
+
+      <!-- Legacy hidden fields used by retro generator -->
+      <textarea id="retro-well" hidden></textarea>
+      <textarea id="retro-improve" hidden></textarea>
+      <textarea id="retro-actions" hidden></textarea>
+      <textarea id="retro-carryover" hidden></textarea>
+      <pre id="retro-output" hidden></pre>
     </div>
   </section>
+
+  <!-- ===== PREVIOUS REPORTS MODAL ===== -->
+  <div class="reports-modal" id="reports-modal" aria-hidden="true" role="dialog" aria-labelledby="reports-modal-title">
+    <div class="reports-modal__backdrop" id="reports-modal-backdrop"></div>
+    <div class="reports-modal__content">
+      <button class="reports-modal__close" id="reports-modal-close" aria-label="Close reports">&#10005; Close</button>
+      <h2 id="reports-modal-title" class="reports-modal__title">Previous Reports</h2>
+      <div id="reports-modal-body" class="reports-modal__body"></div>
+    </div>
+  </div>
 
   <!-- ===== HISTORY ===== -->
   <section class="section" id="history">

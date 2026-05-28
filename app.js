@@ -262,11 +262,14 @@ document.getElementById('close-sprint-btn').addEventListener('click', () => {
   if (!confirm('Archive this sprint and move unfinished tasks to backlog?')) return;
   sprint.endTime = Date.now();
   sprint.retroNotes = {
-    well: document.getElementById('retro-well').value,
-    improve: document.getElementById('retro-improve').value,
-    experiment: document.getElementById('retro-experiment').value,
-    actions: document.getElementById('retro-actions').value,
-    carryover: document.getElementById('retro-carryover').value,
+    experiment: getVal('retro-experiment'),
+    les: { well: getVal('retro-well-a'), improve: getVal('retro-improve-a'), actions: getVal('retro-actions-a'), carryover: getVal('retro-carryover-a') },
+    mattis: { well: getVal('retro-well-b'), improve: getVal('retro-improve-b'), actions: getVal('retro-actions-b'), carryover: getVal('retro-carryover-b') },
+    // Legacy combined fields for backward compat
+    well: getVal('retro-well-a') + (getVal('retro-well-b') ? '\n\nMattis: ' + getVal('retro-well-b') : ''),
+    improve: getVal('retro-improve-a') + (getVal('retro-improve-b') ? '\n\nMattis: ' + getVal('retro-improve-b') : ''),
+    actions: getVal('retro-actions-a') + '\n' + getVal('retro-actions-b'),
+    carryover: getVal('retro-carryover-a') + '\n' + getVal('retro-carryover-b'),
   };
   sprint.reviewNotes = {
     shipped: document.getElementById('r-shipped-desc')?.value,
@@ -296,18 +299,73 @@ document.getElementById('close-sprint-btn').addEventListener('click', () => {
 const PROMPT_FIELDS = ['c-goal','c-user','c-context','c-nongoals','c-dod','c-demo','c-risk'];
 const PROMPT_LABELS = { 'c-goal':'Sprint Goal','c-user':'User / Customer','c-context':'Context','c-nongoals':'Non-goals','c-dod':'Definition of Done','c-demo':'Demo Moment','c-risk':'Main Risk' };
 
-function updatePrompt() {
-  const v = {};
-  PROMPT_FIELDS.forEach(f => v[f] = document.getElementById(f).value.trim() || '(not specified)');
-  const strict = document.getElementById('strict-toggle').checked;
+function getVal(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function buildMarkdowns() {
+  const goal = getVal('c-goal') || '(not set)';
   const dur = DURATIONS[currentMode];
-  let txt = `We are running a ${dur}-minute Claude Code microsprint.\n\n`;
-  PROMPT_FIELDS.forEach(f => txt += `${PROMPT_LABELS[f]}:\n${v[f]}\n\n`);
-  txt += `Working Rules:\n1. First inspect the relevant files and summarize what you found.\n2. Propose a short implementation plan before editing.\n3. Keep the scope tight and aligned to the sprint goal.\n4. Do not modify unrelated files.\n5. Prefer simple, reversible changes.\n6. After implementation, run the most relevant checks available.\n7. End with a concise summary of files changed, validation results, risks, and recommended next steps.\n`;
-  if (strict) txt += `\nStrict Mode:\n- Ask before making broad architectural changes.\n- Do not introduce new dependencies unless absolutely necessary.\n- Do not refactor unrelated code.\n- Stop and report if the task appears larger than ${dur} minutes.\n`;
-  txt += `\nDeliverables:\n- Working implementation or prototype\n- Validation notes\n- Demo instructions\n- Follow-up tasks`;
-  document.getElementById('prompt-output').textContent = txt;
+  const strict = document.getElementById('strict-toggle')?.checked;
+
+  const lesProject = getVal('project-a') || '(not set)';
+  const lesGoal = getVal('c-goal-a') || '(not set)';
+  const lesDoD = getVal('c-dod-a') || '(not set)';
+
+  const mattisProject = getVal('project-b') || '(not set)';
+  const mattisGoal = getVal('c-goal-b') || '(not set)';
+  const mattisDoD = getVal('c-dod-b') || '(not set)';
+
+  const nongoals = getVal('c-nongoals') || '(none)';
+  const risk = getVal('c-risk') || '(none)';
+
+  const sprintContract = `# Sprint Contract\n\n**Duration:** ${dur} minutes\n**Shared Goal:** ${goal}\n\n## Non-goals\n${nongoals}\n\n## Main Risk\n${risk}\n\n---\n_Annotate this with what you cut, what you added, and why._`;
+
+  const lesMd = `# Les · Microsprint\n\n**Project:** ${lesProject}\n**My Goal:** ${lesGoal}\n\n## Definition of Done\n${lesDoD}\n\n## Tasks (fill in)\n- [ ] \n- [ ] \n\n## Notes\n_Annotate as you build._`;
+
+  const mattisMd = `# Mattis · Microsprint\n\n**Project:** ${mattisProject}\n**My Goal:** ${mattisGoal}\n\n## Definition of Done\n${mattisDoD}\n\n## Tasks (fill in)\n- [ ] \n- [ ] \n\n## Notes\n_Annotate as you build._`;
+
+  let claudePrompt = `# Claude Code Prompt\n\nWe are running a ${dur}-minute Claude Code microsprint.\n\n**Sprint Goal:** ${goal}\n**Definition of Done:** ${lesDoD}\n**Non-goals:** ${nongoals}\n**Main Risk:** ${risk}\n\n## Working Rules\n1. First inspect the relevant files and summarize what you found.\n2. Propose a short implementation plan before editing.\n3. Keep the scope tight and aligned to the sprint goal.\n4. Do not modify unrelated files.\n5. Prefer simple, reversible changes.\n6. After implementation, run the most relevant checks available.\n7. End with a concise summary of files changed, validation results, risks, and recommended next steps.\n`;
+  if (strict) claudePrompt += `\n## Strict Mode\n- Ask before making broad architectural changes.\n- Do not introduce new dependencies unless absolutely necessary.\n- Do not refactor unrelated code.\n- Stop and report if the task appears larger than ${dur} minutes.\n`;
+  claudePrompt += `\n## Deliverables\n- Working implementation or prototype\n- Validation notes\n- Demo instructions\n- Follow-up tasks`;
+
+  const dodChecklist = `# Definition of Done Checklist\n\n## Les — ${lesProject}\n- [ ] ${lesDoD || 'TBD'}\n- [ ] Feature works in the browser\n- [ ] No unrelated files changed\n- [ ] Demo path is clear\n\n## Mattis — ${mattisProject}\n- [ ] ${mattisDoD || 'TBD'}\n- [ ] Feature works in the browser\n- [ ] No unrelated files changed\n- [ ] Demo path is clear`;
+
+  const retroTemplate = `# Retro Template\n\n## Les\n**What went well:**\n\n**What to improve:**\n\n**Action items:**\n\n**Carry-over:**\n\n## Mattis\n**What went well:**\n\n**What to improve:**\n\n**Action items:**\n\n**Carry-over:**\n\n## Shared process experiment\n`;
+
+  return [
+    { name: 'sprint-contract.md', body: sprintContract },
+    { name: 'les.md', body: lesMd },
+    { name: 'mattis.md', body: mattisMd },
+    { name: 'claude-prompt.md', body: claudePrompt },
+    { name: 'dod-checklist.md', body: dodChecklist },
+    { name: 'retro-template.md', body: retroTemplate }
+  ];
 }
+
+function updatePrompt() {
+  const docs = buildMarkdowns();
+  const list = document.getElementById('md-list');
+  if (!list) return;
+  list.innerHTML = docs.map((d, i) => `<div class="md-card"><div class="md-card__header"><span class="md-card__title">${d.name}</span><button class="btn btn--copy btn--sm" data-md-idx="${i}">Copy</button></div><pre class="md-card__body" id="md-body-${i}">${escHtml(d.body)}</pre></div>`).join('');
+  // Legacy single output kept for retro export compatibility
+  const legacy = document.getElementById('prompt-output');
+  if (legacy) legacy.textContent = docs.map(d => d.body).join('\n\n---\n\n');
+}
+
+document.getElementById('md-list')?.addEventListener('click', e => {
+  const btn = e.target.closest('[data-md-idx]');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.mdIdx, 10);
+  const docs = buildMarkdowns();
+  const txt = docs[idx]?.body || '';
+  navigator.clipboard.writeText(txt).then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200); }).catch(() => { btn.textContent = 'Failed'; });
+});
+
+document.getElementById('copy-all-md')?.addEventListener('click', function() {
+  const docs = buildMarkdowns();
+  const all = docs.map(d => `<!-- ${d.name} -->\n${d.body}`).join('\n\n---\n\n');
+  const btn = this;
+  navigator.clipboard.writeText(all).then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 1500); }).catch(() => { btn.textContent = 'Failed'; });
+});
 PROMPT_FIELDS.forEach(f => document.getElementById(f).addEventListener('input', updatePrompt));
 document.getElementById('strict-toggle').addEventListener('change', updatePrompt);
 updatePrompt();
@@ -718,10 +776,12 @@ tmRender();
 // All form inputs, mode, toggles, checkboxes, and timer state are saved to localStorage
 
 const PERSIST_INPUTS = [
-  'c-goal','c-user','c-context','c-nongoals','c-dod','c-demo','c-risk','c-goal-a','c-goal-b',
+  'c-goal','c-user','c-context','c-nongoals','c-dod','c-demo','c-risk','c-goal-a','c-goal-b','c-dod-a','c-dod-b',
   'person-a','person-b','project-a','project-b',
   'r-shipped-desc','r-demo-link','r-feedback',
-  'retro-well','retro-improve','retro-experiment','retro-actions','retro-carryover'
+  'retro-experiment',
+  'retro-well-a','retro-improve-a','retro-actions-a','retro-carryover-a',
+  'retro-well-b','retro-improve-b','retro-actions-b','retro-carryover-b'
 ];
 
 const PERSIST_KEY = 'ms-form-state';
@@ -781,6 +841,40 @@ function loadTmState() {
 }
 ['tm-start','tm-pause','tm-reset','tm-prev','tm-next'].forEach(id => document.getElementById(id)?.addEventListener('click', () => setTimeout(saveTmState, 50)));
 document.getElementById('tm-phases')?.addEventListener('click', () => setTimeout(saveTmState, 50));
+
+// ===== PREVIOUS REPORTS MODAL =====
+function renderReportsModal() {
+  const body = document.getElementById('reports-modal-body');
+  if (!body) return;
+  if (history.length === 0) {
+    body.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:40px">No completed sprints yet. Finish a sprint and close it to see reports here.</div>';
+    return;
+  }
+  body.innerHTML = history.slice().reverse().map(h => {
+    const date = new Date(h.startTime).toLocaleString();
+    const les = h.retroNotes?.les || {};
+    const mattis = h.retroNotes?.mattis || {};
+    const renderPerson = (cls, name, data) => `<div class="report-item__person ${cls}"><div class="report-item__person-name">${name}</div>${['well','improve','actions','carryover'].map(f => data[f] ? `<div class="report-item__field"><div class="report-item__field-label">${f}</div><div class="report-item__field-text">${escHtml(data[f])}</div></div>` : '').join('')}</div>`;
+    return `<div class="report-item"><div class="report-item__header"><div class="report-item__goal">${escHtml(h.goal)}</div><div class="report-item__date">${escHtml(h.mode)} · ${date}</div></div>${les.well || les.improve || les.actions || les.carryover ? renderPerson('', 'Les', les) : ''}${mattis.well || mattis.improve || mattis.actions || mattis.carryover ? renderPerson('report-item__person--mattis', 'Mattis', mattis) : ''}${h.retroNotes?.experiment ? `<div class="report-item__field" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)"><div class="report-item__field-label">Process experiment</div><div class="report-item__field-text">${escHtml(h.retroNotes.experiment)}</div></div>` : ''}</div>`;
+  }).join('');
+}
+
+document.getElementById('view-reports-btn')?.addEventListener('click', () => {
+  renderReportsModal();
+  const m = document.getElementById('reports-modal');
+  m.classList.add('open');
+  m.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+});
+function closeReportsModal() {
+  const m = document.getElementById('reports-modal');
+  m.classList.remove('open');
+  m.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+document.getElementById('reports-modal-close')?.addEventListener('click', closeReportsModal);
+document.getElementById('reports-modal-backdrop')?.addEventListener('click', closeReportsModal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('reports-modal').classList.contains('open')) closeReportsModal(); });
 
 // Clear-all utility (exposed for debugging via console)
 window.msResetAll = function() {
