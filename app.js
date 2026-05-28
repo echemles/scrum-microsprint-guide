@@ -123,13 +123,10 @@ document.getElementById('clear-contract-btn')?.addEventListener('click', () => {
   if (!confirm('Clear both contract panels? This will also clear them for your cofounder.')) return;
   CONTRACT_FIELDS.forEach(id => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.value = '';
-    // Push the empty value directly into the Y.Doc so the other peer sees
-    // the clear (an 'input' event would do this too, but dispatching events
-    // synthetically can interact awkwardly with focus / autofill).
-    const ymap = window.msCollab?.ydoc?.getMap('form');
-    if (ymap) ymap.set(id, '');
+    if (el) el.value = '';
+    // Clear the Y.Text on the shared doc so the other peer's field empties
+    // too. clearField is Y.Text-aware (uses ytext.delete, not ymap.set).
+    window.msCollab?.clearField?.(id);
   });
   saveFormState();
   updatePrompt();
@@ -368,11 +365,10 @@ document.getElementById('close-sprint-btn').addEventListener('click', () => {
     // Legacy hidden inputs that mirror the contract
     'c-goal','c-dod','c-nongoals','c-risk','c-user','c-context','c-demo'
   ];
-  const ymap = window.msCollab?.ydoc?.getMap('form');
   FIELDS_TO_CLEAR.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
-    if (ymap) ymap.set(id, '');
+    window.msCollab?.clearField?.(id);
   });
   // Uncheck the review verification checklist
   document.querySelectorAll('#checklist input').forEach(cb => { cb.checked = false; });
@@ -866,8 +862,19 @@ function saveFormState() {
   state.learnOpen = !document.getElementById('learn-body')?.hidden;
   state.logOpen = !document.getElementById('event-log')?.hidden;
   SS(PERSIST_KEY, state);
-  pushSharedState();
+  // NB: do NOT call pushSharedState() here. saveFormState fires on every
+  // keystroke (every PERSIST_INPUTS input event) — pushing the whole state
+  // blob that often floods the WebSocket and starves real text edits.
+  // Non-text state is pushed explicitly from the handlers that mutate it
+  // (mode click, strict toggle, checklist change) and from save().
 }
+
+// Explicit non-text state broadcasters. Call these from the handlers that
+// actually change shared state, not from text-input event listeners.
+function pushModeStrictChecklist() { pushSharedState(); }
+document.getElementById('strict-toggle')?.addEventListener('change', pushModeStrictChecklist);
+document.getElementById('checklist')?.addEventListener('change', pushModeStrictChecklist);
+document.querySelectorAll('.mode-card').forEach(c => c.addEventListener('click', pushModeStrictChecklist));
 
 function loadFormState() {
   const state = LS(PERSIST_KEY);
