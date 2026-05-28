@@ -86,9 +86,10 @@ body.sprint-active .header{top:42px}
 .vp{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;position:relative}
 .vp__inner{max-width:800px;width:100%;margin:0 auto}
 
-/* SPRINT-ONLY: hidden by default in CSS to prevent FOUC */
-.sprint-only{display:none}
-body.sprint-active .sprint-only{display:block}
+/* SPRINT-ONLY: visible always now; standup/facilitator can dim when no sprint */
+.sprint-only{display:block}
+body:not(.sprint-active) #standup,
+body:not(.sprint-active) #facilitator{display:none}
 
 /* REGULAR SECTIONS */
 .section{padding:60px 20px;position:relative}
