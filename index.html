@@ -486,12 +486,14 @@
   <!-- Importmap so y-websocket and y-indexeddb share the SAME yjs instance.
        Without this, each module bundles its own copy, breaking Yjs's
        constructor-identity checks (the "Yjs was already imported" warning). -->
+  <!-- Single yjs URL shared by collab.js and the externalized yjs imports
+       inside y-websocket / y-indexeddb. lib0 and y-protocols are bundled
+       inside their parent modules — listing them here would split yjs
+       across module instances and break Y.Text constructor identity. -->
   <script type="importmap">
   {
     "imports": {
-      "yjs": "https://esm.sh/yjs@13.6.27",
-      "lib0/": "https://esm.sh/lib0@0.2.99/",
-      "y-protocols/": "https://esm.sh/y-protocols@1.0.6/"
+      "yjs": "https://esm.sh/yjs@13.6.27"
     }
   }
   </script>

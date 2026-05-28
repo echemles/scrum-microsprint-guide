@@ -5,8 +5,15 @@
 // constructor-identity checks and emitted "Yjs was already imported" warnings.
 
 import * as Y from 'yjs';
-import { WebsocketProvider } from 'https://esm.sh/y-websocket@2.0.4?external=yjs,lib0,y-protocols';
-import { IndexeddbPersistence } from 'https://esm.sh/y-indexeddb@9.0.12?external=yjs,lib0';
+// Only externalize yjs. esm.sh will bundle lib0 and y-protocols inside
+// each module, but those bundled copies receive the externalized (our)
+// yjs via the 'yjs' bare import — so item-content classes share identity
+// across all three modules. Listing lib0 / y-protocols as external too
+// makes esm.sh load yjs@^13.0.0 transitively (different URL → different
+// module instance → broken constructor identity → toString() returns
+// empty on remote updates).
+import { WebsocketProvider } from 'https://esm.sh/y-websocket@2.0.4?external=yjs';
+import { IndexeddbPersistence } from 'https://esm.sh/y-indexeddb@9.0.12?external=yjs';
 
 // Text fields use Y.Text (character-level CRDT — no shadowing when two
 // peers type into the same field concurrently). Each field gets its own
