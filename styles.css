@@ -402,7 +402,7 @@ body.sprint-active .sprint-only{display:block}
 .tm-phase-btn--completed{
   opacity:.5;color:var(--emerald);border-color:rgba(16,185,129,0.3);
 }
-.tm-phase-btn--completed::after{content:' \\2713'}
+.tm-phase-btn--completed::after{content:' \2713'}
 .timer-modal__progress-section{width:100%;max-width:600px}
 .timer-modal__progress-label{font-size:.65rem;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
 .timer-modal__progress-bar{
