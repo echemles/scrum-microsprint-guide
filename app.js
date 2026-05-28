@@ -65,6 +65,12 @@ function setMode(mode) {
   renderTimeline();
   updatePrompt();
   checkScope();
+  // Update timer modal phases to match mode
+  tmState.phases = TM_PHASES[mode];
+  tmState.phaseIndex = 0;
+  tmState.elapsed = 0;
+  tmState.running = false;
+  if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
 }
 document.querySelectorAll('.mode-card').forEach(c => c.addEventListener('click', () => setMode(c.dataset.mode)));
 
@@ -531,16 +537,37 @@ document.getElementById('sm-script-toggle')?.addEventListener('click', function(
 });
 
 // ===== FULLSCREEN TIMER MODAL =====
+const PLAN_TIPS = ['Pick one clear goal.', 'Choose a tiny sprint backlog.', 'Define what done means.'];
+const BUILD_TIPS = ['Work the smallest useful slice.', 'Keep scope from growing.', 'Capture proof as you go.'];
+const REVIEW_TIPS = ['Demo the increment.', 'Show output, not effort.', 'Decide what feedback changes next.'];
+const RETRO_TIPS = ['Name one thing that worked.', 'Name one thing that slowed you down.', 'Choose one change for the next hour.'];
+
+const TM_PHASES = {
+  spike: [
+    { name: 'Plan', duration: 180, tips: PLAN_TIPS },
+    { name: 'Build', duration: 1020, tips: BUILD_TIPS },
+    { name: 'Review', duration: 300, tips: REVIEW_TIPS },
+    { name: 'Retro', duration: 300, tips: RETRO_TIPS }
+  ],
+  build: [
+    { name: 'Plan', duration: 300, tips: PLAN_TIPS },
+    { name: 'Build', duration: 2700, tips: BUILD_TIPS },
+    { name: 'Review', duration: 300, tips: REVIEW_TIPS },
+    { name: 'Retro', duration: 300, tips: RETRO_TIPS }
+  ],
+  ship: [
+    { name: 'Plan', duration: 600, tips: PLAN_TIPS },
+    { name: 'Build', duration: 4800, tips: BUILD_TIPS },
+    { name: 'Review', duration: 1200, tips: REVIEW_TIPS },
+    { name: 'Retro', duration: 600, tips: RETRO_TIPS }
+  ]
+};
+
 const tmState = {
   phaseIndex: 0,
   elapsed: 0,
   running: false,
-  phases: [
-    { name: 'Plan', duration: 300, tips: ['Pick one clear goal.', 'Choose a tiny sprint backlog.', 'Define what done means.'] },
-    { name: 'Build', duration: 2700, tips: ['Work the smallest useful slice.', 'Keep scope from growing.', 'Capture proof as you go.'] },
-    { name: 'Review', duration: 300, tips: ['Demo the increment.', 'Show output, not effort.', 'Decide what feedback changes next.'] },
-    { name: 'Retro', duration: 300, tips: ['Name one thing that worked.', 'Name one thing that slowed you down.', 'Choose one change for the next hour.'] }
-  ]
+  phases: TM_PHASES[currentMode]
 };
 let tmInterval = null;
 
@@ -571,9 +598,12 @@ function tmRender() {
   document.getElementById('tm-phase-progress').style.width = phasePct + '%';
 
   // Total progress
+  const totalDur = tmTotalDuration();
   const totalElapsed = tmElapsedBefore() + tmState.elapsed;
-  const totalPct = Math.min(100, (totalElapsed / tmTotalDuration()) * 100);
+  const totalPct = Math.min(100, (totalElapsed / totalDur) * 100);
   document.getElementById('tm-total-progress').style.width = totalPct + '%';
+  const totalLabel = document.getElementById('tm-total-label');
+  if (totalLabel) totalLabel.textContent = Math.round(totalDur / 60) + ' min';
 
   // Phase buttons
   document.querySelectorAll('.tm-phase-btn').forEach((btn, i) => {
