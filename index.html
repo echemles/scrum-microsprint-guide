@@ -71,105 +71,157 @@
     <a href="#contract" class="scroll-hint">Scroll to set up your sprint</a>
   </section>
 
-  <!-- ===== CONTRACT (full viewport) ===== -->
+  <!-- ===== CONTRACT (two fully separate panels) ===== -->
   <section class="vp section--alt" id="contract">
     <div class="vp__inner">
       <span class="section__tag">Step 1</span>
       <h2 class="section__title">Sprint Contract</h2>
-      <p class="section__lead">The one thing this hour is for, then who's doing what.</p>
+      <p class="section__lead">Each person owns their own contract. Fill out yours independently.</p>
 
       <form class="contract" id="contract-form" autocomplete="off">
-        <div class="contract__field"><label for="c-goal">Shared Sprint Goal</label><input id="c-goal" placeholder="e.g., Demo the recipe import flow end-to-end"></div>
-
         <div class="contract__pair">
           <div class="contract__person contract__person--les">
             <div class="contract__person-header">Les</div>
             <div class="contract__field"><label for="project-a">Project</label><input id="project-a" placeholder="Recipe App"></div>
-            <div class="contract__field"><label for="c-goal-a">My Goal</label><input id="c-goal-a" placeholder="Import parser + preview card"></div>
+            <div class="contract__field"><label for="c-goal-a">My Sprint Goal</label><input id="c-goal-a" placeholder="Build the recipe import flow"></div>
             <div class="contract__field"><label for="c-dod-a">My Definition of Done</label><textarea id="c-dod-a" rows="2" placeholder="Paste URL → see extracted fields → edit before save"></textarea></div>
+            <div class="contract__field"><label for="c-nongoals-a">Non-goals</label><textarea id="c-nongoals-a" rows="2" placeholder="No auth, no billing, no refactors"></textarea></div>
+            <div class="contract__field"><label for="c-risk-a">Main Risk</label><input id="c-risk-a" placeholder="Claude overbuilds the data model"></div>
+            <div class="contract__field"><label for="c-impl-a">Implementation Notes</label><textarea id="c-impl-a" rows="4" placeholder="Files I'll touch, approach, tradeoffs, things to validate..."></textarea></div>
           </div>
 
           <div class="contract__person contract__person--mattis">
             <div class="contract__person-header">Mattis</div>
             <div class="contract__field"><label for="project-b">Project</label><input id="project-b" placeholder="Dashboard"></div>
-            <div class="contract__field"><label for="c-goal-b">My Goal</label><input id="c-goal-b" placeholder="Dashboard data binding"></div>
+            <div class="contract__field"><label for="c-goal-b">My Sprint Goal</label><input id="c-goal-b" placeholder="Wire up dashboard data binding"></div>
             <div class="contract__field"><label for="c-dod-b">My Definition of Done</label><textarea id="c-dod-b" rows="2" placeholder="Live data renders in 3 widgets, no flicker on refresh"></textarea></div>
+            <div class="contract__field"><label for="c-nongoals-b">Non-goals</label><textarea id="c-nongoals-b" rows="2" placeholder="No new widgets, no chart redesigns"></textarea></div>
+            <div class="contract__field"><label for="c-risk-b">Main Risk</label><input id="c-risk-b" placeholder="API contract changes mid-sprint"></div>
+            <div class="contract__field"><label for="c-impl-b">Implementation Notes</label><textarea id="c-impl-b" rows="4" placeholder="Files I'll touch, approach, tradeoffs, things to validate..."></textarea></div>
           </div>
         </div>
 
-        <div class="contract__row">
-          <div class="contract__field"><label for="c-nongoals">Non-goals (shared)</label><textarea id="c-nongoals" rows="2" placeholder="No auth, billing, refactors"></textarea></div>
-          <div class="contract__field"><label for="c-risk">Main Risk</label><textarea id="c-risk" rows="2" placeholder="Claude overbuilds the data model"></textarea></div>
-        </div>
-
-        <!-- Hidden legacy inputs kept for back-compat / prompt generator -->
+        <!-- Hidden legacy inputs (kept for backward compat with persistence + prompt generator) -->
+        <input type="hidden" id="c-goal" value="">
         <input type="hidden" id="c-user" value="">
         <input type="hidden" id="c-context" value="">
         <input type="hidden" id="c-dod" value="">
         <input type="hidden" id="c-demo" value="">
+        <input type="hidden" id="c-nongoals" value="">
+        <input type="hidden" id="c-risk" value="">
         <input type="hidden" id="person-a" value="Les">
         <input type="hidden" id="person-b" value="Mattis">
       </form>
-
-      <div class="templates">
-        <span class="templates__label">Templates:</span>
-        <button class="templates__btn" data-tpl="impl">Implementation</button>
-        <button class="templates__btn" data-tpl="bugbash">Bug Bash</button>
-        <button class="templates__btn" data-tpl="design">Design</button>
-        <button class="templates__btn" data-tpl="docs">Docs</button>
-        <button class="templates__btn" data-tpl="discovery">Discovery</button>
-      </div>
     </div>
   </section>
 
-  <!-- ===== PROMPT (markdown artifacts list) ===== -->
+  <!-- ===== MICROSPRINT MARKDOWNS (one window per person) ===== -->
   <section class="vp" id="prompt">
     <div class="vp__inner">
       <span class="section__tag">Step 2</span>
       <h2 class="section__title">Microsprint Markdowns</h2>
-      <p class="section__lead">Each card below is a separate markdown artifact. Copy them into Claude Code, your notes, or wherever you want to annotate them.</p>
+      <p class="section__lead">Two plans, ready to copy into Claude Code. Each one is a self-contained microsprint brief.</p>
+
       <div class="prompt-controls">
-        <label class="toggle-label"><input type="checkbox" id="strict-toggle"> Strict Mode</label>
-        <button class="btn btn--copy" id="copy-all-md">Copy All</button>
+        <label class="toggle-label"><input type="checkbox" id="strict-toggle"> Include Strict Mode rules</label>
       </div>
-      <div class="md-list" id="md-list"></div>
-      <!-- Legacy element kept for prompt generator function -->
+
+      <div class="md-pair">
+        <div class="md-card md-card--les">
+          <div class="md-card__header">
+            <span class="md-card__title">les.md</span>
+            <button class="btn btn--copy btn--sm" id="copy-md-les">Copy</button>
+          </div>
+          <pre class="md-card__body" id="md-body-les"></pre>
+        </div>
+
+        <div class="md-card md-card--mattis">
+          <div class="md-card__header">
+            <span class="md-card__title">mattis.md</span>
+            <button class="btn btn--copy btn--sm" id="copy-md-mattis">Copy</button>
+          </div>
+          <pre class="md-card__body" id="md-body-mattis"></pre>
+        </div>
+      </div>
+
+      <!-- Legacy element kept for retro generator -->
       <pre class="prompt-output" id="prompt-output" hidden></pre>
     </div>
   </section>
 
-  <!-- ===== PLANNING (full viewport, sprint-only) ===== -->
-  <section class="vp sprint-only" id="planning">
+  <!-- ===== PLANNING (informational) ===== -->
+  <section class="vp" id="planning">
     <div class="vp__inner">
       <span class="section__tag">Step 3</span>
       <h2 class="section__title">Sprint Planning</h2>
-      <div class="scope-warn" id="scope-warn" hidden>You may be overscoping. Cut aggressively to protect the demo.</div>
-      <div class="planning-cols">
-        <div class="planning-col">
-          <h3 class="planning-col__title">Backlog</h3>
-          <div id="plan-backlog" class="planning-cards"></div>
+      <p class="section__lead">Five minutes. Then you build.</p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card__num">1</div>
+          <h3>Pick one goal each</h3>
+          <p>Les and Mattis each commit to a single Sprint Goal. If you can't say it in one sentence, it's too big.</p>
         </div>
-        <div class="planning-col planning-col--sprint">
-          <h3 class="planning-col__title">Sprint Backlog <span id="sprint-count">0</span></h3>
-          <div id="plan-sprint" class="planning-cards"></div>
+        <div class="info-card">
+          <div class="info-card__num">2</div>
+          <h3>Choose 1–3 tickets</h3>
+          <p>Pull tickets from your backlog into the sprint. More than 3 tickets in 60 minutes = overscope. Cut now, ship later.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card__num">3</div>
+          <h3>Write the Definition of Done</h3>
+          <p>What does "done" look like for each ticket? If you can't demo it, it doesn't count.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card__num">4</div>
+          <h3>Identify blockers up front</h3>
+          <p>If you already know you're stuck on something, say it now. Solve or cut before the build phase.</p>
         </div>
       </div>
-      <div class="board-add">
-        <input type="text" id="task-title" placeholder="Add a task..." class="board-add__input">
-        <select id="task-type" class="board-add__select"><option>UI</option><option>Bug</option><option>Copy</option><option>Data</option><option>Integration</option><option>Test</option><option>Refactor</option><option>Research</option></select>
-        <select id="task-owner" class="board-add__select"><option value="">Unassigned</option></select>
-        <button class="btn btn--primary" id="add-task-btn">Add</button>
+
+      <div class="info-callout">
+        <strong>Where do tickets live?</strong> Tickets are managed in <a href="https://github.com/echemles/hfs2s" target="_blank" rel="noopener">HFS2S</a> (your kanban + Claude Code workflow). This app is the operating layer — HFS2S is the work surface.
       </div>
     </div>
   </section>
 
-  <!-- ===== BOARD (full viewport, sprint-only) ===== -->
-  <section class="vp section--alt sprint-only" id="board">
+  <!-- ===== BOARD (informational) ===== -->
+  <section class="vp section--alt" id="board">
     <div class="vp__inner">
       <span class="section__tag">Step 4</span>
       <h2 class="section__title">Sprint Board</h2>
-      <div class="board-dod-banner">Done = teammate can build on it without asking you questions.</div>
-      <div class="board" id="board-grid"></div>
+      <p class="section__lead">Track work where it lives. We use the HFS2S kanban during the sprint.</p>
+
+      <div class="info-grid info-grid--cols">
+        <div class="info-card info-card--col">
+          <div class="info-card__col-dot" style="background:var(--text-dim)"></div>
+          <h3>Backlog</h3>
+          <p>Everything you could do. Don't touch during the sprint.</p>
+        </div>
+        <div class="info-card info-card--col">
+          <div class="info-card__col-dot" style="background:var(--indigo)"></div>
+          <h3>Todo</h3>
+          <p>Selected for this sprint. The contract.</p>
+        </div>
+        <div class="info-card info-card--col">
+          <div class="info-card__col-dot" style="background:var(--amber)"></div>
+          <h3>In Progress</h3>
+          <p>Claude is working on it. One per person at a time.</p>
+        </div>
+        <div class="info-card info-card--col">
+          <div class="info-card__col-dot" style="background:var(--emerald)"></div>
+          <h3>Done</h3>
+          <p>Verified. Demoable. Proof attached.</p>
+        </div>
+      </div>
+
+      <div class="info-callout">
+        <strong>Done means verified.</strong> A ticket is "done" only when it meets its Definition of Done — feature works in the browser, no unrelated files changed, demo path is clear, and a teammate could build on it without asking you questions.
+      </div>
+
+      <div class="info-callout info-callout--accent">
+        Open the HFS2S kanban in another tab. Move tickets there. This app just runs the clock and captures retros.
+      </div>
     </div>
   </section>
 
@@ -198,26 +250,47 @@
     </div>
   </section>
 
-  <!-- ===== REVIEW (full viewport) ===== -->
+  <!-- ===== REVIEW (informational, demo-focused) ===== -->
   <section class="vp" id="review">
     <div class="vp__inner">
       <span class="section__tag">Step 5</span>
-      <h2 class="section__title">Review Gate</h2>
-      <p class="section__lead">Done means verified, not just implemented.</p>
-      <div class="contract__field"><label for="r-shipped-desc">What shipped</label><textarea id="r-shipped-desc" rows="2" placeholder="Recipe import with preview card"></textarea></div>
-      <div class="contract__row">
-        <div class="contract__field"><label for="r-demo-link">Demo link</label><input id="r-demo-link" placeholder="https://..."></div>
-        <div class="contract__field"><label for="r-feedback">Needs feedback</label><input id="r-feedback" placeholder="Edge case: paginated recipes"></div>
+      <h2 class="section__title">Demo Review</h2>
+      <p class="section__lead">Five minutes. Show, don't tell.</p>
+
+      <div class="info-callout info-callout--big">
+        <div class="info-callout__title">The only review that counts is a live demo.</div>
+        <p>Open the app. Run the flow. Show your cofounder what works. If you can't show it, it didn't ship.</p>
       </div>
-      <div class="checklist" id="checklist">
-        <label class="check-item"><input type="checkbox"><span>Feature works in the browser</span></label>
-        <label class="check-item"><input type="checkbox"><span>Matches the sprint goal</span></label>
-        <label class="check-item"><input type="checkbox"><span>No unrelated files changed</span></label>
-        <label class="check-item"><input type="checkbox"><span>Relevant checks were run</span></label>
-        <label class="check-item"><input type="checkbox"><span>Human reviewer understands the change</span></label>
-        <label class="check-item"><input type="checkbox"><span>Demo path is clear</span></label>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card__num">1</div>
+          <h3>Demo the increment</h3>
+          <p>Walk through the actual feature in the browser. Not the code. Not the diff. The thing.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card__num">2</div>
+          <h3>Confirm Definition of Done</h3>
+          <p>Did it hit the DoD you wrote in your contract? If not, it carries over.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card__num">3</div>
+          <h3>Capture feedback</h3>
+          <p>What surprised your cofounder? What needs another sprint? Note it for retro.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card__num">4</div>
+          <h3>Mark the ticket Done in HFS2S</h3>
+          <p>Only after demo passes. Attach proof (screenshot, recording, or link).</p>
+        </div>
       </div>
-      <div class="review-progress" id="review-progress">0 / 6 verified</div>
+
+      <!-- Hidden legacy elements (kept for persistence backward compat) -->
+      <textarea id="r-shipped-desc" hidden></textarea>
+      <input type="hidden" id="r-demo-link">
+      <input type="hidden" id="r-feedback">
+      <div id="checklist" hidden></div>
+      <div id="review-progress" hidden></div>
     </div>
   </section>
 

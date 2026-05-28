@@ -79,18 +79,16 @@ document.querySelectorAll('.templates__btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const t = TEMPLATES[btn.dataset.tpl];
     if (!t) return;
-    document.getElementById('c-goal').value = t.goal;
-    document.getElementById('c-nongoals').value = t.nongoals;
-    document.getElementById('c-dod').value = t.dod;
-    document.getElementById('c-risk').value = t.risk;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set('c-goal-a', t.goal); set('c-dod-a', t.dod); set('c-nongoals-a', t.nongoals); set('c-risk-a', t.risk);
+    set('c-goal-b', t.goal); set('c-dod-b', t.dod); set('c-nongoals-b', t.nongoals); set('c-risk-b', t.risk);
     updatePrompt();
   });
 });
 
 // DoD preset (item 20)
-document.getElementById('dod-preset-btn').addEventListener('click', () => {
-  document.getElementById('c-dod').value = 'Usable by teammate, tested or intentionally waived, proof attached, next step obvious.';
-  updatePrompt();
+document.getElementById('dod-preset-btn')?.addEventListener('click', () => {
+  const el = document.getElementById('c-dod'); if (el) { el.value = 'Usable by teammate, tested or intentionally waived, proof attached, next step obvious.'; updatePrompt(); }
 });
 
 // ===== TIMELINE =====
@@ -301,71 +299,42 @@ const PROMPT_LABELS = { 'c-goal':'Sprint Goal','c-user':'User / Customer','c-con
 
 function getVal(id) { return (document.getElementById(id)?.value || '').trim(); }
 
-function buildMarkdowns() {
-  const goal = getVal('c-goal') || '(not set)';
+function buildPersonMd(name, projectId, goalId, dodId, nongoalsId, riskId, implId) {
   const dur = DURATIONS[currentMode];
   const strict = document.getElementById('strict-toggle')?.checked;
+  const project = getVal(projectId) || '(not set)';
+  const goal = getVal(goalId) || '(not set)';
+  const dod = getVal(dodId) || '(not set)';
+  const nongoals = getVal(nongoalsId) || '(none)';
+  const risk = getVal(riskId) || '(none)';
+  const impl = getVal(implId) || '_(fill in your approach, files to touch, validations)_';
 
-  const lesProject = getVal('project-a') || '(not set)';
-  const lesGoal = getVal('c-goal-a') || '(not set)';
-  const lesDoD = getVal('c-dod-a') || '(not set)';
-
-  const mattisProject = getVal('project-b') || '(not set)';
-  const mattisGoal = getVal('c-goal-b') || '(not set)';
-  const mattisDoD = getVal('c-dod-b') || '(not set)';
-
-  const nongoals = getVal('c-nongoals') || '(none)';
-  const risk = getVal('c-risk') || '(none)';
-
-  const sprintContract = `# Sprint Contract\n\n**Duration:** ${dur} minutes\n**Shared Goal:** ${goal}\n\n## Non-goals\n${nongoals}\n\n## Main Risk\n${risk}\n\n---\n_Annotate this with what you cut, what you added, and why._`;
-
-  const lesMd = `# Les · Microsprint\n\n**Project:** ${lesProject}\n**My Goal:** ${lesGoal}\n\n## Definition of Done\n${lesDoD}\n\n## Tasks (fill in)\n- [ ] \n- [ ] \n\n## Notes\n_Annotate as you build._`;
-
-  const mattisMd = `# Mattis · Microsprint\n\n**Project:** ${mattisProject}\n**My Goal:** ${mattisGoal}\n\n## Definition of Done\n${mattisDoD}\n\n## Tasks (fill in)\n- [ ] \n- [ ] \n\n## Notes\n_Annotate as you build._`;
-
-  let claudePrompt = `# Claude Code Prompt\n\nWe are running a ${dur}-minute Claude Code microsprint.\n\n**Sprint Goal:** ${goal}\n**Definition of Done:** ${lesDoD}\n**Non-goals:** ${nongoals}\n**Main Risk:** ${risk}\n\n## Working Rules\n1. First inspect the relevant files and summarize what you found.\n2. Propose a short implementation plan before editing.\n3. Keep the scope tight and aligned to the sprint goal.\n4. Do not modify unrelated files.\n5. Prefer simple, reversible changes.\n6. After implementation, run the most relevant checks available.\n7. End with a concise summary of files changed, validation results, risks, and recommended next steps.\n`;
-  if (strict) claudePrompt += `\n## Strict Mode\n- Ask before making broad architectural changes.\n- Do not introduce new dependencies unless absolutely necessary.\n- Do not refactor unrelated code.\n- Stop and report if the task appears larger than ${dur} minutes.\n`;
-  claudePrompt += `\n## Deliverables\n- Working implementation or prototype\n- Validation notes\n- Demo instructions\n- Follow-up tasks`;
-
-  const dodChecklist = `# Definition of Done Checklist\n\n## Les — ${lesProject}\n- [ ] ${lesDoD || 'TBD'}\n- [ ] Feature works in the browser\n- [ ] No unrelated files changed\n- [ ] Demo path is clear\n\n## Mattis — ${mattisProject}\n- [ ] ${mattisDoD || 'TBD'}\n- [ ] Feature works in the browser\n- [ ] No unrelated files changed\n- [ ] Demo path is clear`;
-
-  const retroTemplate = `# Retro Template\n\n## Les\n**What went well:**\n\n**What to improve:**\n\n**Action items:**\n\n**Carry-over:**\n\n## Mattis\n**What went well:**\n\n**What to improve:**\n\n**Action items:**\n\n**Carry-over:**\n\n## Shared process experiment\n`;
-
-  return [
-    { name: 'sprint-contract.md', body: sprintContract },
-    { name: 'les.md', body: lesMd },
-    { name: 'mattis.md', body: mattisMd },
-    { name: 'claude-prompt.md', body: claudePrompt },
-    { name: 'dod-checklist.md', body: dodChecklist },
-    { name: 'retro-template.md', body: retroTemplate }
-  ];
+  let md = `# ${name} — Microsprint Plan\n\n**Duration:** ${dur} minutes\n**Project:** ${project}\n\n## Sprint Goal\n${goal}\n\n## Definition of Done\n${dod}\n\n## Non-goals\n${nongoals}\n\n## Main Risk\n${risk}\n\n## Implementation Notes\n${impl}\n\n---\n\n## Claude Code Prompt\n\nWe are running a ${dur}-minute Claude Code microsprint.\n\n**Sprint Goal:** ${goal}\n**Definition of Done:** ${dod}\n**Non-goals:** ${nongoals}\n**Main Risk:** ${risk}\n\n**My implementation plan:**\n${impl}\n\n### Working Rules\n1. First inspect the relevant files and summarize what you found.\n2. Propose a short implementation plan before editing.\n3. Keep the scope tight and aligned to the sprint goal.\n4. Do not modify unrelated files.\n5. Prefer simple, reversible changes.\n6. After implementation, run the most relevant checks available.\n7. End with a concise summary of files changed, validation results, risks, and recommended next steps.\n`;
+  if (strict) md += `\n### Strict Mode\n- Ask before making broad architectural changes.\n- Do not introduce new dependencies unless absolutely necessary.\n- Do not refactor unrelated code.\n- Stop and report if the task appears larger than ${dur} minutes.\n`;
+  md += `\n### Deliverables\n- Working implementation or prototype\n- Validation notes\n- Demo instructions\n- Follow-up tasks`;
+  return md;
 }
 
 function updatePrompt() {
-  const docs = buildMarkdowns();
-  const list = document.getElementById('md-list');
-  if (!list) return;
-  list.innerHTML = docs.map((d, i) => `<div class="md-card"><div class="md-card__header"><span class="md-card__title">${d.name}</span><button class="btn btn--copy btn--sm" data-md-idx="${i}">Copy</button></div><pre class="md-card__body" id="md-body-${i}">${escHtml(d.body)}</pre></div>`).join('');
-  // Legacy single output kept for retro export compatibility
+  const lesMd = buildPersonMd('Les', 'project-a', 'c-goal-a', 'c-dod-a', 'c-nongoals-a', 'c-risk-a', 'c-impl-a');
+  const mattisMd = buildPersonMd('Mattis', 'project-b', 'c-goal-b', 'c-dod-b', 'c-nongoals-b', 'c-risk-b', 'c-impl-b');
+  const lesEl = document.getElementById('md-body-les');
+  const mattisEl = document.getElementById('md-body-mattis');
+  if (lesEl) lesEl.textContent = lesMd;
+  if (mattisEl) mattisEl.textContent = mattisMd;
   const legacy = document.getElementById('prompt-output');
-  if (legacy) legacy.textContent = docs.map(d => d.body).join('\n\n---\n\n');
+  if (legacy) legacy.textContent = lesMd + '\n\n---\n\n' + mattisMd;
 }
 
-document.getElementById('md-list')?.addEventListener('click', e => {
-  const btn = e.target.closest('[data-md-idx]');
-  if (!btn) return;
-  const idx = parseInt(btn.dataset.mdIdx, 10);
-  const docs = buildMarkdowns();
-  const txt = docs[idx]?.body || '';
-  navigator.clipboard.writeText(txt).then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200); }).catch(() => { btn.textContent = 'Failed'; });
-});
-
-document.getElementById('copy-all-md')?.addEventListener('click', function() {
-  const docs = buildMarkdowns();
-  const all = docs.map(d => `<!-- ${d.name} -->\n${d.body}`).join('\n\n---\n\n');
-  const btn = this;
-  navigator.clipboard.writeText(all).then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 1500); }).catch(() => { btn.textContent = 'Failed'; });
-});
+function copyMd(btnId, srcId, label) {
+  const btn = document.getElementById(btnId);
+  btn?.addEventListener('click', function() {
+    const txt = document.getElementById(srcId)?.textContent || '';
+    navigator.clipboard.writeText(txt).then(() => { this.textContent = 'Copied!'; this.classList.add('copied'); setTimeout(() => { this.textContent = label; this.classList.remove('copied'); }, 1200); }).catch(() => { this.textContent = 'Failed'; });
+  });
+}
+copyMd('copy-md-les', 'md-body-les', 'Copy');
+copyMd('copy-md-mattis', 'md-body-mattis', 'Copy');
 PROMPT_FIELDS.forEach(f => document.getElementById(f).addEventListener('input', updatePrompt));
 document.getElementById('strict-toggle').addEventListener('change', updatePrompt);
 updatePrompt();
@@ -384,23 +353,26 @@ copyBtn('copy-prompt', 'prompt-output');
 copyBtn('copy-retro', 'retro-output');
 
 // ===== TASK MANAGEMENT =====
-document.getElementById('add-task-btn').addEventListener('click', addTask);
-document.getElementById('task-title').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+document.getElementById('add-task-btn')?.addEventListener('click', addTask);
+document.getElementById('task-title')?.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 
 function addTask() {
-  const text = document.getElementById('task-title').value.trim();
+  const ti = document.getElementById('task-title');
+  if (!ti) return;
+  const text = ti.value.trim();
   if (!text) return;
   tasks.push({
     id: tid++, text, type: document.getElementById('task-type').value,
     owner: document.getElementById('task-owner').value,
     sprintId: null, col: 'backlog', blockedReason: '', tooBig: false
   });
-  document.getElementById('task-title').value = '';
+  ti.value = '';
   save(); renderPlanning(); renderBoard();
 }
 
 // ===== PLANNING (items 6,7,9,22,23) =====
 function renderPlanning() {
+  if (!document.getElementById('plan-backlog')) return; // planning UI removed (informational now)
   const backlog = tasks.filter(t => !t.sprintId && t.col === 'backlog');
   const sprintTasks = tasks.filter(t => sprint && t.sprintId === sprint.id);
 
@@ -416,26 +388,29 @@ function renderPlanning() {
   checkScope();
 }
 
-document.getElementById('plan-backlog').addEventListener('click', e => {
+document.getElementById('plan-backlog')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-pull]');
   if (btn && sprint) { const t = tasks.find(x => x.id === +btn.dataset.pull); if (t) { t.sprintId = sprint.id; t.col = 'selected'; save(); renderPlanning(); renderBoard(); logEvent('Pulled: ' + t.text); } }
   const tbBtn = e.target.closest('[data-toobig]');
   if (tbBtn) { const t = tasks.find(x => x.id === +tbBtn.dataset.toobig); if (t) { t.tooBig = true; save(); renderPlanning(); } }
 });
-document.getElementById('plan-sprint').addEventListener('click', e => {
+document.getElementById('plan-sprint')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-unpull]');
   if (btn) { const t = tasks.find(x => x.id === +btn.dataset.unpull); if (t) { t.sprintId = null; t.col = 'backlog'; save(); renderPlanning(); renderBoard(); } }
 });
 
 function checkScope() {
-  if (!sprint) { document.getElementById('scope-warn').hidden = true; return; }
+  const warn = document.getElementById('scope-warn');
+  if (!warn) return;
+  if (!sprint) { warn.hidden = true; return; }
   const count = tasks.filter(t => t.sprintId === sprint.id && t.col !== 'cut').length;
-  document.getElementById('scope-warn').hidden = count <= SCOPE_LIMITS[sprint.mode];
+  warn.hidden = count <= SCOPE_LIMITS[sprint.mode];
 }
 
 // ===== BOARD (items 2,12) =====
 function renderBoard() {
   const grid = document.getElementById('board-grid');
+  if (!grid) return; // board UI removed (informational now)
   if (!sprint) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)">Start a sprint to activate the board.</div>'; return; }
   const sprintTasks = tasks.filter(t => t.sprintId === sprint.id);
   grid.innerHTML = BOARD_COLS.map(col => {
@@ -452,7 +427,7 @@ function renderTaskCard(t, col) {
   return `<div class="task-card"><span class="task-card__type">${escHtml(t.type)}</span>${escHtml(t.text)}${t.owner ? `<span class="task-card__owner">${escHtml(t.owner)}</span>` : ''}${blocker}<div class="task-card__actions">${left}${right}<button class="del-btn" data-del="${t.id}" aria-label="Delete task">×</button><button data-block="${t.id}" aria-label="Toggle blocker">🚫</button></div></div>`;
 }
 
-document.getElementById('board-grid').addEventListener('click', e => {
+document.getElementById('board-grid')?.addEventListener('click', e => {
   const mv = e.target.closest('[data-mv]');
   if (mv) {
     const t = tasks.find(x => x.id === +mv.dataset.mv);
@@ -776,9 +751,8 @@ tmRender();
 // All form inputs, mode, toggles, checkboxes, and timer state are saved to localStorage
 
 const PERSIST_INPUTS = [
-  'c-goal','c-user','c-context','c-nongoals','c-dod','c-demo','c-risk','c-goal-a','c-goal-b','c-dod-a','c-dod-b',
-  'person-a','person-b','project-a','project-b',
-  'r-shipped-desc','r-demo-link','r-feedback',
+  'project-a','c-goal-a','c-dod-a','c-nongoals-a','c-risk-a','c-impl-a',
+  'project-b','c-goal-b','c-dod-b','c-nongoals-b','c-risk-b','c-impl-b',
   'retro-experiment',
   'retro-well-a','retro-improve-a','retro-actions-a','retro-carryover-a',
   'retro-well-b','retro-improve-b','retro-actions-b','retro-carryover-b'
