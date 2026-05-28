@@ -131,7 +131,8 @@ async function connect(roomCode, userName, serverUrl) {
 
   await persistence.whenSynced;
 
-  // Apply Yjs text fields → DOM
+  // Apply Yjs text fields → DOM. If the Y.Doc has a value (even empty
+  // string), it wins. If the key isn't set yet, leave the local value.
   SYNC_FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -151,6 +152,34 @@ async function connect(roomCode, userName, serverUrl) {
 
   window.updatePrompt?.();
   window.msRefreshLabels?.();
+
+  // Seed: push current local values into the Y.Doc for any key that the
+  // doc doesn't have yet. First peer to join wins the seed; later peers
+  // receive the seeded values. This eliminates the "we see different
+  // things" bug caused by both peers loading their own localStorage and
+  // neither side broadcasting.
+  ydoc.transact(() => {
+    SYNC_FIELDS.forEach(id => {
+      if (ymap.get(id) !== undefined) return; // already in doc
+      const el = document.getElementById(id);
+      if (el && typeof el.value === 'string' && el.value !== '') {
+        ymap.set(id, el.value);
+      }
+    });
+    // Seed non-text state from current app state
+    const localState = window.msSnapshotState?.();
+    if (localState) {
+      Object.keys(localState).forEach(k => {
+        const key = '__' + k;
+        if (ymap.get(key) !== undefined) return;
+        const v = localState[k];
+        // Skip null/empty defaults — only seed meaningful values
+        if (v === null || v === undefined) return;
+        if (Array.isArray(v) && v.length === 0) return;
+        ymap.set(key, v);
+      });
+    }
+  }, 'local-seed');
 
   // DOM input → Yjs (text fields)
   SYNC_FIELDS.forEach(id => {

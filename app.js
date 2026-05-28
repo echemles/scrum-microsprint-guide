@@ -940,6 +940,32 @@ window.msRefreshLabels = function() {
   renderStandups();
 };
 
+// Snapshot of current local non-text state, for collab to seed the Y.Doc
+// when joining a room for the first time.
+window.msSnapshotState = function() {
+  return {
+    mode: currentMode,
+    strict: document.getElementById('strict-toggle')?.checked || false,
+    checklist: Array.from(document.querySelectorAll('#checklist input')).map(i => i.checked),
+    sprint,
+    history,
+    log: eventLog
+  };
+};
+
+// Clear all localStorage for synced fields so the room becomes the only
+// source of truth. Useful when local data is stale relative to the room.
+window.msResetLocal = function() {
+  if (!confirm('Clear LOCAL form data (so the room view becomes the source of truth)?')) return;
+  localStorage.removeItem('ms-form-state');
+  localStorage.removeItem('ms-sprint');
+  localStorage.removeItem('ms-tasks');
+  localStorage.removeItem('ms-history');
+  localStorage.removeItem('ms-log');
+  localStorage.removeItem('ms-timer-state');
+  location.reload();
+};
+
 // ===== INIT =====
 loadFormState();
 loadTmState();
