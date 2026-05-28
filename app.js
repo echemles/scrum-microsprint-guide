@@ -114,11 +114,12 @@ function getTimelinePhaseIndex() {
 
 renderTimeline();
 
-// ===== OWNER SELECTS =====
+// ===== OWNER SELECTS (only if board/standup UI exists) =====
 function updateOwnerSelects() {
-  const a = document.getElementById('person-a').value || 'Person A';
-  const b = document.getElementById('person-b').value || 'Person B';
+  const a = document.getElementById('person-a')?.value || 'Les';
+  const b = document.getElementById('person-b')?.value || 'Mattis';
   [document.getElementById('task-owner'), document.getElementById('su-who')].forEach(sel => {
+    if (!sel) return;
     sel.innerHTML = '';
     [['', 'Unassigned'], [a, a], [b, b]].forEach(([v, t]) => {
       const opt = document.createElement('option');
@@ -126,7 +127,7 @@ function updateOwnerSelects() {
     });
   });
 }
-['person-a', 'person-b'].forEach(id => document.getElementById(id).addEventListener('input', updateOwnerSelects));
+['person-a', 'person-b'].forEach(id => document.getElementById(id)?.addEventListener('input', updateOwnerSelects));
 updateOwnerSelects();
 
 // ===== SPRINT LIFECYCLE (items 1,4,25,26) =====
@@ -340,10 +341,11 @@ document.getElementById('strict-toggle').addEventListener('change', updatePrompt
 updatePrompt();
 
 function copyBtn(btnId, textId) {
-  document.getElementById(btnId).addEventListener('click', function() {
-    const btn = this;
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', function() {
     const label = btnId.includes('retro') ? 'Copy Report' : 'Copy Prompt';
-    navigator.clipboard.writeText(document.getElementById(textId).textContent)
+    navigator.clipboard.writeText(document.getElementById(textId)?.textContent || '')
       .then(() => { btn.textContent = 'Copied!'; btn.classList.add('copied'); })
       .catch(() => { btn.textContent = 'Copy failed'; })
       .finally(() => { setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500); });
