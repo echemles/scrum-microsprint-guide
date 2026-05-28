@@ -183,16 +183,30 @@ function logEvent(msg) {
 }
 
 document.getElementById('start-sprint-btn').addEventListener('click', () => {
-  const goalEl = document.getElementById('c-goal');
-  const goal = goalEl.value.trim();
+  // Read goals from the visible two-panel contract. At least one must be set.
+  const goalAEl = document.getElementById('c-goal-a');
+  const goalBEl = document.getElementById('c-goal-b');
+  const goalA = goalAEl?.value.trim() || '';
+  const goalB = goalBEl?.value.trim() || '';
+  const personA = document.getElementById('person-a')?.value.trim() || 'Les';
+  const personB = document.getElementById('person-b')?.value.trim() || 'Mattis';
+  // Combined goal text used by legacy fields, prompt, etc.
+  const goal = [goalA && `${personA}: ${goalA}`, goalB && `${personB}: ${goalB}`].filter(Boolean).join(' / ');
   if (!goal) {
-    goalEl.style.borderColor = 'var(--rose)';
-    let err = document.getElementById('goal-error');
-    if (!err) { err = document.createElement('div'); err.id = 'goal-error'; err.style.cssText = 'color:var(--rose);font-size:.75rem;margin-top:4px'; err.textContent = 'Please enter a sprint goal'; goalEl.parentElement.appendChild(err); }
-    goalEl.focus();
-    goalEl.addEventListener('input', () => { goalEl.style.borderColor = ''; document.getElementById('goal-error')?.remove(); }, { once: true });
+    // Flag both panels — user needs to fill at least one
+    [goalAEl, goalBEl].forEach(el => {
+      if (!el) return;
+      el.style.borderColor = 'var(--rose)';
+      el.addEventListener('input', () => { el.style.borderColor = ''; }, { once: true });
+    });
+    (goalAEl || goalBEl)?.focus();
+    alert('Please enter a sprint goal for at least one person before starting.');
     return;
   }
+  // Mirror into the legacy hidden c-goal so anything reading it (prompts,
+  // history records) keeps working.
+  const legacyGoal = document.getElementById('c-goal');
+  if (legacyGoal) legacyGoal.value = goal;
   sprint = {
     id: 'sp-' + Date.now(),
     mode: currentMode,
@@ -301,8 +315,11 @@ document.getElementById('tb-end').addEventListener('click', () => {
 
 // Close & archive (items 29,39)
 document.getElementById('close-sprint-btn').addEventListener('click', () => {
-  if (!sprint) return;
-  if (!confirm('Archive this sprint and move unfinished tasks to backlog?')) return;
+  if (!sprint) {
+    alert('No active sprint to close. Start one with the "Start Sprint" button after filling in at least one Sprint Goal in the contract.');
+    return;
+  }
+  if (!confirm('Archive this sprint? Retro action items will move to the next backlog and the sprint will be saved to history.')) return;
   sprint.endTime = Date.now();
   sprint.retroNotes = {
     experiment: getVal('retro-experiment'),
