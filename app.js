@@ -349,7 +349,40 @@ document.getElementById('close-sprint-btn').addEventListener('click', () => {
   logEvent('Sprint archived');
   sprint = null;
   eventLog = [];
+
+  // Clear all per-sprint fields so the next sprint starts fresh on both
+  // browsers. Push the empty strings through the Y.Doc so the cofounder's
+  // UI clears too. Person names (person-a/b) are preserved.
+  const FIELDS_TO_CLEAR = [
+    // Contract
+    'project-a','c-goal-a','c-dod-a','c-nongoals-a','c-risk-a','c-impl-a',
+    'project-b','c-goal-b','c-dod-b','c-nongoals-b','c-risk-b','c-impl-b',
+    // Retro
+    'retro-experiment',
+    'retro-well-a','retro-improve-a','retro-actions-a','retro-carryover-a',
+    'retro-well-b','retro-improve-b','retro-actions-b','retro-carryover-b',
+    // Review
+    'r-shipped-desc','r-demo-link','r-feedback',
+    // Standup (textareas — leave su-who select alone)
+    'su-progress','su-next','su-blockers',
+    // Legacy hidden inputs that mirror the contract
+    'c-goal','c-dod','c-nongoals','c-risk','c-user','c-context','c-demo'
+  ];
+  const ymap = window.msCollab?.ydoc?.getMap('form');
+  FIELDS_TO_CLEAR.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+    if (ymap) ymap.set(id, '');
+  });
+  // Uncheck the review verification checklist
+  document.querySelectorAll('#checklist input').forEach(cb => { cb.checked = false; });
+  const rp = document.getElementById('review-progress');
+  if (rp) rp.textContent = '0 / 6 verified';
+
   save();
+  saveFormState();
+  updatePrompt();
+  updateRetro();
   document.getElementById('topbar').hidden = true;
   if (timerInterval) clearInterval(timerInterval);
   renderAll();
