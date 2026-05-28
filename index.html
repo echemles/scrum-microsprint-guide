@@ -37,6 +37,11 @@
           <button class="btn btn--outline btn--sm" id="join-random">Random</button>
         </div>
       </div>
+      <div class="join-modal__field">
+        <label for="join-server">Server URL (your y-websocket relay)</label>
+        <input id="join-server" placeholder="wss://your-relay.onrender.com">
+        <small style="font-size:.7rem;color:var(--text-dim);margin-top:4px">Deploy your own in 5 min — see <a href="https://github.com/echemles/scrum-microsprint-guide/tree/main/server" target="_blank" style="color:var(--indigo)">server/README.md</a>. Public servers are unreliable.</small>
+      </div>
       <div class="join-modal__actions">
         <button class="btn btn--outline" id="join-leave-btn">Leave Room</button>
         <button class="btn btn--primary" id="join-confirm-btn">Connect</button>

@@ -28,10 +28,12 @@ const joinRoomInput = document.getElementById('join-room');
 let ydoc = null, provider = null, wsProvider = null, persistence = null, ymap = null;
 let currentRoom = localStorage.getItem('ms-room') || '';
 let currentName = localStorage.getItem('ms-name') || '';
+let currentServer = localStorage.getItem('ms-server') || '';
 
 function openJoinModal() {
   joinNameInput.value = currentName;
   joinRoomInput.value = currentRoom;
+  document.getElementById('join-server').value = currentServer;
   joinModal.classList.add('open');
   joinModal.setAttribute('aria-hidden', 'false');
   setTimeout(() => (currentName ? joinRoomInput : joinNameInput).focus(), 100);
@@ -75,7 +77,7 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-async function connect(roomCode, userName) {
+async function connect(roomCode, userName, serverUrl) {
   // Disconnect previous if any
   if (provider) { try { provider.destroy(); } catch {} provider = null; }
   if (wsProvider) { try { wsProvider.destroy(); } catch {} wsProvider = null; }
@@ -84,25 +86,34 @@ async function connect(roomCode, userName) {
 
   currentRoom = roomCode;
   currentName = userName || 'Anon';
+  currentServer = (serverUrl || '').trim().replace(/\/+$/, ''); // strip trailing slashes
   localStorage.setItem('ms-room', currentRoom);
   localStorage.setItem('ms-name', currentName);
+  if (currentServer) localStorage.setItem('ms-server', currentServer);
+  else localStorage.removeItem('ms-server');
 
   ydoc = new Y.Doc();
   const roomKey = `microsprint-${currentRoom}`;
   persistence = new IndexeddbPersistence(roomKey, ydoc);
 
-  // Provider 1: WebRTC (peer-to-peer, fast when it works)
+  // PRIMARY: WebSocket relay (reliable, works through any NAT/firewall)
+  if (currentServer) {
+    try {
+      wsProvider = new WebsocketProvider(currentServer, roomKey, ydoc);
+      console.log(`[collab] WebSocket connecting to ${currentServer}/${roomKey}`);
+    } catch (e) { console.warn('WebSocket provider failed:', e); }
+  } else {
+    console.warn('[collab] No server URL set. Sync will only work if WebRTC peer connection succeeds (unreliable). Deploy a relay: see server/README.md');
+  }
+
+  // SECONDARY: WebRTC (peer-to-peer, attempts direct connection — often fails behind NAT)
   try {
     provider = new WebrtcProvider(roomKey, ydoc, {
-      signaling: ['wss://signaling.yjs.dev', 'wss://y-webrtc-signaling-eu.herokuapp.com'],
-      maxConns: 20
+      signaling: ['wss://signaling.yjs.dev'],
+      maxConns: 20,
+      filterBcConns: true
     });
   } catch (e) { console.warn('WebRTC provider failed:', e); }
-
-  // Provider 2: WebSocket fallback (relays through Yjs demo server, works through any firewall)
-  try {
-    wsProvider = new WebsocketProvider('wss://demos.yjs.dev/ws', roomKey, ydoc);
-  } catch (e) { console.warn('WebSocket provider failed:', e); }
 
   ymap = ydoc.getMap('form');
 
@@ -182,6 +193,7 @@ function disconnect() {
   ymap = null;
   currentRoom = '';
   localStorage.removeItem('ms-room');
+  // Keep ms-server so user doesn't have to re-paste it next time
   updateBar(false, 0, []);
 }
 
@@ -194,9 +206,10 @@ document.getElementById('join-random').addEventListener('click', () => { joinRoo
 document.getElementById('join-confirm-btn').addEventListener('click', async () => {
   const room = joinRoomInput.value.trim();
   const name = joinNameInput.value.trim() || 'Anon';
+  const server = document.getElementById('join-server').value.trim();
   if (!room) { joinRoomInput.focus(); return; }
   closeJoinModal();
-  await connect(room, name);
+  await connect(room, name, server);
 });
 
 document.getElementById('join-leave-btn').addEventListener('click', () => {
@@ -210,7 +223,7 @@ document.addEventListener('keydown', e => {
 
 // Auto-connect if we have a saved room
 if (currentRoom && currentName) {
-  connect(currentRoom, currentName).catch(err => {
+  connect(currentRoom, currentName, currentServer).catch(err => {
     console.error('Collab connect failed:', err);
     updateBar(false, 0, []);
   });
