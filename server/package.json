@@ -7,8 +7,12 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "lib0": "^0.2.99",
     "ws": "^8.18.0",
-    "y-websocket": "1.5.4",
+    "y-protocols": "^1.0.6",
     "yjs": "^13.6.20"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
