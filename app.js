@@ -714,7 +714,84 @@ document.addEventListener('keydown', e => {
 // Initial render of timer
 tmRender();
 
+// ===== FULL PERSISTENCE LAYER =====
+// All form inputs, mode, toggles, checkboxes, and timer state are saved to localStorage
+
+const PERSIST_INPUTS = [
+  'c-goal','c-user','c-context','c-nongoals','c-dod','c-demo','c-risk','c-goal-a','c-goal-b',
+  'person-a','person-b','project-a','project-b',
+  'r-shipped-desc','r-demo-link','r-feedback',
+  'retro-well','retro-improve','retro-experiment','retro-actions','retro-carryover'
+];
+
+const PERSIST_KEY = 'ms-form-state';
+
+function saveFormState() {
+  const state = {};
+  PERSIST_INPUTS.forEach(id => { const el = document.getElementById(id); if (el) state[id] = el.value; });
+  state.mode = currentMode;
+  state.strict = document.getElementById('strict-toggle')?.checked || false;
+  state.checklist = Array.from(document.querySelectorAll('#checklist input')).map(i => i.checked);
+  state.learnOpen = !document.getElementById('learn-body')?.hidden;
+  state.logOpen = !document.getElementById('event-log')?.hidden;
+  SS(PERSIST_KEY, state);
+}
+
+function loadFormState() {
+  const state = LS(PERSIST_KEY);
+  if (!state) return;
+  PERSIST_INPUTS.forEach(id => { const el = document.getElementById(id); if (el && state[id] !== undefined) el.value = state[id]; });
+  if (state.mode && TIMELINES[state.mode]) setMode(state.mode);
+  const strict = document.getElementById('strict-toggle');
+  if (strict && state.strict !== undefined) strict.checked = state.strict;
+  if (Array.isArray(state.checklist)) {
+    document.querySelectorAll('#checklist input').forEach((cb, i) => { if (state.checklist[i]) cb.checked = true; });
+    const n = document.querySelectorAll('#checklist input:checked').length;
+    document.getElementById('review-progress').textContent = `${n} / 6 verified`;
+  }
+  if (state.learnOpen) { document.getElementById('learn-body').hidden = false; document.getElementById('learn-toggle')?.setAttribute('aria-expanded', 'true'); }
+  if (state.logOpen) { document.getElementById('event-log').hidden = false; document.getElementById('log-toggle')?.setAttribute('aria-expanded', 'true'); }
+  // Refresh derived UI
+  updateOwnerSelects();
+  updatePrompt();
+  updateRetro();
+}
+
+// Attach auto-save to all persisted inputs
+PERSIST_INPUTS.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', saveFormState);
+});
+document.getElementById('strict-toggle')?.addEventListener('change', saveFormState);
+document.getElementById('checklist')?.addEventListener('change', saveFormState);
+document.querySelectorAll('.mode-card').forEach(c => c.addEventListener('click', saveFormState));
+document.getElementById('learn-toggle')?.addEventListener('click', saveFormState);
+document.getElementById('log-toggle')?.addEventListener('click', saveFormState);
+
+// Persist timer modal state
+const TM_KEY = 'ms-timer-state';
+function saveTmState() { SS(TM_KEY, { phaseIndex: tmState.phaseIndex, elapsed: tmState.elapsed, running: false }); }
+function loadTmState() {
+  const s = LS(TM_KEY);
+  if (s && typeof s.phaseIndex === 'number') {
+    tmState.phaseIndex = Math.min(s.phaseIndex, tmState.phases.length - 1);
+    tmState.elapsed = s.elapsed || 0;
+    tmRender();
+  }
+}
+['tm-start','tm-pause','tm-reset','tm-prev','tm-next'].forEach(id => document.getElementById(id)?.addEventListener('click', () => setTimeout(saveTmState, 50)));
+document.getElementById('tm-phases')?.addEventListener('click', () => setTimeout(saveTmState, 50));
+
+// Clear-all utility (exposed for debugging via console)
+window.msResetAll = function() {
+  if (!confirm('Clear ALL Microsprint data (sprints, tasks, history, forms)?')) return;
+  ['ms-sprint','ms-tasks','ms-history','ms-log','ms-form-state','ms-timer-state'].forEach(k => localStorage.removeItem(k));
+  location.reload();
+};
+
 // ===== INIT =====
+loadFormState();
+loadTmState();
 if (sprint && sprint.phase !== 'completed') {
   activateSprint();
 } else {
