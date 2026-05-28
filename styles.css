@@ -212,6 +212,10 @@ body:not(.sprint-active) #facilitator{display:none}
 .btn--copy.copied{background:var(--emerald);color:var(--white);border-color:var(--emerald)}
 .btn--outline{background:transparent;color:var(--indigo);border:1px solid var(--border)}
 .btn--outline:hover{border-color:var(--indigo)}
+.contract__toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.contract__clear{color:var(--rose);border-color:rgba(244,63,94,.4)}
+.contract__clear:hover{border-color:var(--rose);background:rgba(244,63,94,.08)}
+.contract__toolbar-hint{font-size:.72rem;color:var(--text-dim)}
 
 /* PLANNING */
 .planning-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}

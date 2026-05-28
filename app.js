@@ -112,6 +112,29 @@ document.getElementById('dod-preset-btn')?.addEventListener('click', () => {
   const el = document.getElementById('c-dod'); if (el) { el.value = 'Usable by teammate, tested or intentionally waived, proof attached, next step obvious.'; updatePrompt(); }
 });
 
+// Clear all contract fields (both panels) and broadcast the clear to the
+// connected cofounder via the Y.Doc. Skips person-a/person-b so the names
+// remain set.
+const CONTRACT_FIELDS = [
+  'project-a','c-goal-a','c-dod-a','c-nongoals-a','c-risk-a','c-impl-a',
+  'project-b','c-goal-b','c-dod-b','c-nongoals-b','c-risk-b','c-impl-b'
+];
+document.getElementById('clear-contract-btn')?.addEventListener('click', () => {
+  if (!confirm('Clear both contract panels? This will also clear them for your cofounder.')) return;
+  CONTRACT_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = '';
+    // Push the empty value directly into the Y.Doc so the other peer sees
+    // the clear (an 'input' event would do this too, but dispatching events
+    // synthetically can interact awkwardly with focus / autofill).
+    const ymap = window.msCollab?.ydoc?.getMap('form');
+    if (ymap) ymap.set(id, '');
+  });
+  saveFormState();
+  updatePrompt();
+});
+
 // ===== TIMELINE =====
 function renderTimeline() {
   const tl = document.getElementById('tl');
