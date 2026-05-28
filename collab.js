@@ -1,10 +1,12 @@
-// Live collaboration via Yjs + WebRTC (peer-to-peer)
-// No backend; uses public signaling server. Share a room code to sync.
+// Live collaboration via Yjs + a self-hosted y-websocket relay.
+// Imports use esm.sh with ?external=yjs so all packages share the same yjs
+// instance (resolved via the importmap in index.html). Without that, each
+// jsdelivr `+esm` bundle inlined its own yjs copy, which broke Yjs's
+// constructor-identity checks and emitted "Yjs was already imported" warnings.
 
-import * as Y from 'https://cdn.jsdelivr.net/npm/yjs@13.6.20/+esm';
-import { WebrtcProvider } from 'https://cdn.jsdelivr.net/npm/y-webrtc@10.3.0/+esm';
-import { WebsocketProvider } from 'https://cdn.jsdelivr.net/npm/y-websocket@2.0.4/+esm';
-import { IndexeddbPersistence } from 'https://cdn.jsdelivr.net/npm/y-indexeddb@9.0.12/+esm';
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'https://esm.sh/y-websocket@2.0.4?external=yjs,lib0,y-protocols';
+import { IndexeddbPersistence } from 'https://esm.sh/y-indexeddb@9.0.12?external=yjs,lib0';
 
 const SYNC_FIELDS = [
   // Person names
@@ -37,7 +39,7 @@ const joinModal = document.getElementById('join-modal');
 const joinNameInput = document.getElementById('join-name');
 const joinRoomInput = document.getElementById('join-room');
 
-let ydoc = null, provider = null, wsProvider = null, persistence = null, ymap = null;
+let ydoc = null, wsProvider = null, persistence = null, ymap = null;
 let currentRoom = localStorage.getItem('ms-room') || '';
 let currentName = localStorage.getItem('ms-name') || '';
 let currentServer = localStorage.getItem('ms-server') || '';
@@ -91,7 +93,6 @@ function escapeHtml(s) {
 
 async function connect(roomCode, userName, serverUrl) {
   // Disconnect previous if any
-  if (provider) { try { provider.destroy(); } catch {} provider = null; }
   if (wsProvider) { try { wsProvider.destroy(); } catch {} wsProvider = null; }
   if (persistence) { try { persistence.destroy(); } catch {} persistence = null; }
   if (ydoc) { try { ydoc.destroy(); } catch {} ydoc = null; }
@@ -108,24 +109,20 @@ async function connect(roomCode, userName, serverUrl) {
   const roomKey = `microsprint-${currentRoom}`;
   persistence = new IndexeddbPersistence(roomKey, ydoc);
 
-  // PRIMARY: WebSocket relay (reliable, works through any NAT/firewall)
-  if (currentServer) {
-    try {
-      wsProvider = new WebsocketProvider(currentServer, roomKey, ydoc);
-      console.log(`[collab] WebSocket connecting to ${currentServer}/${roomKey}`);
-    } catch (e) { console.warn('WebSocket provider failed:', e); }
-  } else {
-    console.warn('[collab] No server URL set. Sync will only work if WebRTC peer connection succeeds (unreliable). Deploy a relay: see server/README.md');
+  // WebSocket relay (only transport — drop WebRTC, public signaling is dead)
+  if (!currentServer) {
+    console.warn('[collab] No server URL set — collab disabled. Deploy a relay: see server/README.md');
+    updateBar(false, 0, []);
+    return;
   }
-
-  // SECONDARY: WebRTC (peer-to-peer, attempts direct connection — often fails behind NAT)
   try {
-    provider = new WebrtcProvider(roomKey, ydoc, {
-      signaling: ['wss://signaling.yjs.dev'],
-      maxConns: 20,
-      filterBcConns: true
-    });
-  } catch (e) { console.warn('WebRTC provider failed:', e); }
+    wsProvider = new WebsocketProvider(currentServer, roomKey, ydoc);
+    console.log(`[collab] WebSocket connecting to ${currentServer}/${roomKey}`);
+  } catch (e) {
+    console.error('[collab] WebSocket provider failed:', e);
+    updateBar(false, 0, []);
+    return;
+  }
 
   ymap = ydoc.getMap('form');
 
@@ -220,35 +217,24 @@ async function connect(roomCode, userName, serverUrl) {
     window.msRefreshLabels?.();
   });
 
-  // Awareness (presence) — set on both providers
+  // Awareness (presence)
   const myColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-  if (provider?.awareness) provider.awareness.setLocalStateField('user', { name: currentName, color: myColor });
-  if (wsProvider?.awareness) wsProvider.awareness.setLocalStateField('user', { name: currentName, color: myColor });
+  wsProvider.awareness.setLocalStateField('user', { name: currentName, color: myColor });
 
   const refreshPresence = () => {
-    // Merge states from both providers, dedupe by clientID
-    const all = new Map();
-    if (provider?.awareness) {
-      provider.awareness.getStates().forEach((state, id) => { if (id !== provider.awareness.clientID && state.user) all.set(id, state.user); });
-    }
-    if (wsProvider?.awareness) {
-      wsProvider.awareness.getStates().forEach((state, id) => { if (id !== wsProvider.awareness.clientID && state.user) all.set(id, state.user); });
-    }
-    const peers = Array.from(all.values());
-    const connected = (provider?.connected || false) || (wsProvider?.wsconnected || false);
-    updateBar(connected, peers.length, peers);
+    const peers = [];
+    wsProvider.awareness.getStates().forEach((state, id) => {
+      if (id !== wsProvider.awareness.clientID && state.user) peers.push(state.user);
+    });
+    updateBar(wsProvider.wsconnected, peers.length, peers);
   };
-  provider?.awareness?.on('change', refreshPresence);
-  wsProvider?.awareness?.on('change', refreshPresence);
-  provider?.on('status', refreshPresence);
-  provider?.on('peers', refreshPresence);
-  wsProvider?.on('status', refreshPresence);
-  wsProvider?.on('sync', refreshPresence);
+  wsProvider.awareness.on('change', refreshPresence);
+  wsProvider.on('status', refreshPresence);
+  wsProvider.on('sync', refreshPresence);
   refreshPresence();
 }
 
 function disconnect() {
-  if (provider) { try { provider.destroy(); } catch {} provider = null; }
   if (wsProvider) { try { wsProvider.destroy(); } catch {} wsProvider = null; }
   if (persistence) { try { persistence.destroy(); } catch {} persistence = null; }
   if (ydoc) { try { ydoc.destroy(); } catch {} ydoc = null; }
@@ -318,7 +304,7 @@ window.msCollab = {
   connect,
   disconnect,
   pushState,
-  get connected() { return (provider?.connected || false) || (wsProvider?.wsconnected || false); },
+  get connected() { return wsProvider?.wsconnected || false; },
   get ydoc() { return ydoc; },
-  get provider() { return provider; }
+  get provider() { return wsProvider; }
 };

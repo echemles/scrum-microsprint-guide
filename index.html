@@ -478,6 +478,18 @@
   </div>
 
   <script src="app.js"></script>
+  <!-- Importmap so y-websocket and y-indexeddb share the SAME yjs instance.
+       Without this, each module bundles its own copy, breaking Yjs's
+       constructor-identity checks (the "Yjs was already imported" warning). -->
+  <script type="importmap">
+  {
+    "imports": {
+      "yjs": "https://esm.sh/yjs@13.6.27",
+      "lib0/": "https://esm.sh/lib0@0.2.99/",
+      "y-protocols/": "https://esm.sh/y-protocols@1.0.6/"
+    }
+  }
+  </script>
   <script type="module" src="collab.js"></script>
 </body>
 </html>
