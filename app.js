@@ -16,7 +16,7 @@ let timerInterval = null;
 function save() { SS('ms-sprint', sprint); SS('ms-tasks', tasks); SS('ms-history', history); SS('ms-log', eventLog); }
 
 function toggleSprintSections() {
-  document.querySelectorAll('.sprint-only').forEach(el => { el.hidden = !sprint; });
+  document.body.classList.toggle('sprint-active', !!sprint);
 }
 
 // ===== TIMELINES =====
@@ -277,14 +277,13 @@ document.getElementById('close-sprint-btn').addEventListener('click', () => {
   tasks.filter(t => t.sprintId === sprint.id && t.col !== 'verified' && t.col !== 'cut').forEach(t => { t.sprintId = null; t.col = 'backlog'; });
 
   history.push({ ...sprint });
+  logEvent('Sprint archived');
   sprint = null;
   eventLog = [];
   save();
-  document.body.classList.remove('sprint-active');
   document.getElementById('topbar').hidden = true;
   if (timerInterval) clearInterval(timerInterval);
   renderAll();
-  logEvent('Sprint archived');
 });
 
 // ===== PROMPT GENERATOR =====
@@ -395,7 +394,9 @@ document.getElementById('board-grid').addEventListener('click', e => {
     const t = tasks.find(x => x.id === +mv.dataset.mv);
     if (!t) return;
     const ci = BOARD_COLS.indexOf(t.col);
-    t.col = mv.dataset.dir === 'l' ? BOARD_COLS[ci - 1] : BOARD_COLS[ci + 1];
+    const ni = mv.dataset.dir === 'l' ? ci - 1 : ci + 1;
+    if (ni < 0 || ni >= BOARD_COLS.length) return;
+    t.col = BOARD_COLS[ni];
     save(); renderBoard(); logEvent(`Moved "${t.text}" → ${COL_LABELS[t.col]}`);
   }
   const del = e.target.closest('[data-del]');
@@ -492,7 +493,7 @@ function renderHistory() {
   const lastRetro = history.length ? history[history.length - 1].retroNotes : null;
   let rec = '<h3>Next Sprint</h3>';
   if (backlog.length) rec += `<p><strong>${backlog.length} tasks</strong> in backlog ready for the next sprint.</p>`;
-  if (lastRetro?.actions) rec += `<p>Retro actions: ${lastRetro.actions}</p>`;
+  if (lastRetro?.actions) rec += `<p>Retro actions: ${escHtml(lastRetro.actions)}</p>`;
   if (!backlog.length && !lastRetro) rec += '<p>Backlog is empty. Add tasks to get started.</p>';
   document.getElementById('next-rec').innerHTML = rec;
 }
@@ -506,9 +507,6 @@ document.getElementById('log-toggle').addEventListener('click', function() { con
 // ===== THEORY =====
 // Learn drawer (consolidated educational content)
 document.getElementById('learn-toggle')?.addEventListener('click', function() { const b = document.getElementById('learn-body'); b.hidden = !b.hidden; this.textContent = b.hidden ? 'Learn: Scrum concepts, operating model, failure modes' : 'Hide learning content'; this.setAttribute('aria-expanded', !b.hidden); });
-// Legacy toggles (may not exist in new HTML)
-document.getElementById('theory-toggle')?.addEventListener('click', function() { const b = document.getElementById('theory-body'); if (b) { b.hidden = !b.hidden; this.setAttribute('aria-expanded', !b.hidden); } });
-document.getElementById('sm-script-toggle')?.addEventListener('click', function() { const b = document.getElementById('sm-script-body'); if (b) { b.hidden = !b.hidden; this.setAttribute('aria-expanded', !b.hidden); } });
 
 // ===== RENDER ALL =====
 function renderAll() {
@@ -620,6 +618,8 @@ function tmOpen() {
 }
 
 function tmClose() {
+  tmState.running = false;
+  if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
   document.getElementById('timer-modal').classList.remove('open');
   document.getElementById('timer-modal').setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';

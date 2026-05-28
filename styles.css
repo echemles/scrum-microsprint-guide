@@ -2,7 +2,7 @@
 :root{
   --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2035;--surface:#1e2640;
   --border:rgba(99,102,241,0.12);--border2:rgba(255,255,255,0.06);
-  --text:#c9d1e0;--text-dim:#6b7a99;--white:#f0f4ff;
+  --text:#c9d1e0;--text-dim:#8899bb;--white:#f0f4ff;
   --indigo:#6366f1;--indigo-glow:rgba(99,102,241,0.25);
   --emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;--cyan:#06b6d4;
   --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
@@ -85,6 +85,10 @@ body.sprint-active .header{top:42px}
 /* FULL VIEWPORT SECTIONS */
 .vp{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;position:relative}
 .vp__inner{max-width:800px;width:100%;margin:0 auto}
+
+/* SPRINT-ONLY: hidden by default in CSS to prevent FOUC */
+.sprint-only{display:none}
+body.sprint-active .sprint-only{display:block}
 
 /* REGULAR SECTIONS */
 .section{padding:60px 20px;position:relative}
@@ -241,6 +245,9 @@ body.sprint-active .header{top:42px}
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
 .reveal.visible{opacity:1;transform:translateY(0)}
 
+@media(max-width:1024px){
+  .board{grid-template-columns:repeat(3,1fr)}
+}
 @media(max-width:768px){
   .nav__links{display:none}
   .board{grid-template-columns:repeat(2,1fr)}
@@ -249,6 +256,7 @@ body.sprint-active .header{top:42px}
   .metrics{grid-template-columns:repeat(2,1fr)}
   .topbar__goal{display:none}
   .topbar__roles{display:none}
+  .vp{min-height:auto;padding:60px 16px}
 }
 @media(max-width:480px){.board{grid-template-columns:1fr}}
 
