@@ -3,6 +3,7 @@
 
 import * as Y from 'https://cdn.jsdelivr.net/npm/yjs@13.6.20/+esm';
 import { WebrtcProvider } from 'https://cdn.jsdelivr.net/npm/y-webrtc@10.3.0/+esm';
+import { WebsocketProvider } from 'https://cdn.jsdelivr.net/npm/y-websocket@2.0.4/+esm';
 import { IndexeddbPersistence } from 'https://cdn.jsdelivr.net/npm/y-indexeddb@9.0.12/+esm';
 
 const SYNC_FIELDS = [
@@ -24,7 +25,7 @@ const joinModal = document.getElementById('join-modal');
 const joinNameInput = document.getElementById('join-name');
 const joinRoomInput = document.getElementById('join-room');
 
-let ydoc = null, provider = null, persistence = null, ymap = null;
+let ydoc = null, provider = null, wsProvider = null, persistence = null, ymap = null;
 let currentRoom = localStorage.getItem('ms-room') || '';
 let currentName = localStorage.getItem('ms-name') || '';
 
@@ -77,6 +78,7 @@ function escapeHtml(s) {
 async function connect(roomCode, userName) {
   // Disconnect previous if any
   if (provider) { try { provider.destroy(); } catch {} provider = null; }
+  if (wsProvider) { try { wsProvider.destroy(); } catch {} wsProvider = null; }
   if (persistence) { try { persistence.destroy(); } catch {} persistence = null; }
   if (ydoc) { try { ydoc.destroy(); } catch {} ydoc = null; }
 
@@ -88,10 +90,20 @@ async function connect(roomCode, userName) {
   ydoc = new Y.Doc();
   const roomKey = `microsprint-${currentRoom}`;
   persistence = new IndexeddbPersistence(roomKey, ydoc);
-  provider = new WebrtcProvider(roomKey, ydoc, {
-    signaling: ['wss://signaling.yjs.dev', 'wss://y-webrtc-signaling-eu.herokuapp.com'],
-    maxConns: 20
-  });
+
+  // Provider 1: WebRTC (peer-to-peer, fast when it works)
+  try {
+    provider = new WebrtcProvider(roomKey, ydoc, {
+      signaling: ['wss://signaling.yjs.dev', 'wss://y-webrtc-signaling-eu.herokuapp.com'],
+      maxConns: 20
+    });
+  } catch (e) { console.warn('WebRTC provider failed:', e); }
+
+  // Provider 2: WebSocket fallback (relays through Yjs demo server, works through any firewall)
+  try {
+    wsProvider = new WebsocketProvider('wss://demos.yjs.dev/ws', roomKey, ydoc);
+  } catch (e) { console.warn('WebSocket provider failed:', e); }
+
   ymap = ydoc.getMap('form');
 
   await persistence.whenSynced;
@@ -135,27 +147,36 @@ async function connect(roomCode, userName) {
     window.updatePrompt?.();
   });
 
-  // Awareness (presence)
-  const awareness = provider.awareness;
+  // Awareness (presence) — set on both providers
   const myColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-  awareness.setLocalStateField('user', { name: currentName, color: myColor });
+  if (provider?.awareness) provider.awareness.setLocalStateField('user', { name: currentName, color: myColor });
+  if (wsProvider?.awareness) wsProvider.awareness.setLocalStateField('user', { name: currentName, color: myColor });
 
   const refreshPresence = () => {
-    const states = Array.from(awareness.getStates().entries());
-    const peers = states
-      .filter(([clientId]) => clientId !== awareness.clientID)
-      .map(([, state]) => state.user)
-      .filter(Boolean);
-    updateBar(provider.connected, peers.length, peers);
+    // Merge states from both providers, dedupe by clientID
+    const all = new Map();
+    if (provider?.awareness) {
+      provider.awareness.getStates().forEach((state, id) => { if (id !== provider.awareness.clientID && state.user) all.set(id, state.user); });
+    }
+    if (wsProvider?.awareness) {
+      wsProvider.awareness.getStates().forEach((state, id) => { if (id !== wsProvider.awareness.clientID && state.user) all.set(id, state.user); });
+    }
+    const peers = Array.from(all.values());
+    const connected = (provider?.connected || false) || (wsProvider?.wsconnected || false);
+    updateBar(connected, peers.length, peers);
   };
-  awareness.on('change', refreshPresence);
-  provider.on('status', refreshPresence);
-  provider.on('peers', refreshPresence);
+  provider?.awareness?.on('change', refreshPresence);
+  wsProvider?.awareness?.on('change', refreshPresence);
+  provider?.on('status', refreshPresence);
+  provider?.on('peers', refreshPresence);
+  wsProvider?.on('status', refreshPresence);
+  wsProvider?.on('sync', refreshPresence);
   refreshPresence();
 }
 
 function disconnect() {
   if (provider) { try { provider.destroy(); } catch {} provider = null; }
+  if (wsProvider) { try { wsProvider.destroy(); } catch {} wsProvider = null; }
   if (persistence) { try { persistence.destroy(); } catch {} persistence = null; }
   if (ydoc) { try { ydoc.destroy(); } catch {} ydoc = null; }
   ymap = null;
