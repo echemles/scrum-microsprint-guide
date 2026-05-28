@@ -12,6 +12,39 @@
 <body>
   <div class="grain"></div>
 
+  <!-- COLLAB STATUS BAR -->
+  <div class="collab-bar" id="collab-bar">
+    <span class="collab-bar__dot" id="collab-dot"></span>
+    <span class="collab-bar__label" id="collab-label">Solo</span>
+    <span class="collab-bar__users" id="collab-users"></span>
+    <button class="collab-bar__btn" id="collab-join-btn">Join Room</button>
+  </div>
+
+  <!-- JOIN ROOM MODAL -->
+  <div class="join-modal" id="join-modal" aria-hidden="true" role="dialog">
+    <div class="join-modal__backdrop" id="join-modal-backdrop"></div>
+    <div class="join-modal__content">
+      <h3>Live Collaboration</h3>
+      <p>Share a room code with your cofounder. Both browsers must use the same code to sync.</p>
+      <div class="join-modal__field">
+        <label for="join-name">Your name</label>
+        <input id="join-name" placeholder="Les" maxlength="20">
+      </div>
+      <div class="join-modal__field">
+        <label for="join-room">Room code</label>
+        <div class="join-modal__row">
+          <input id="join-room" placeholder="e.g., les-mattis-2026" maxlength="40">
+          <button class="btn btn--outline btn--sm" id="join-random">Random</button>
+        </div>
+      </div>
+      <div class="join-modal__actions">
+        <button class="btn btn--outline" id="join-leave-btn">Leave Room</button>
+        <button class="btn btn--primary" id="join-confirm-btn">Connect</button>
+      </div>
+      <button class="join-modal__close" id="join-modal-close" aria-label="Close">&times;</button>
+    </div>
+  </div>
+
   <div class="topbar" id="topbar" hidden>
     <div class="topbar__inner">
       <div class="topbar__left">
@@ -440,5 +473,6 @@
   </div>
 
   <script src="app.js"></script>
+  <script type="module" src="collab.js"></script>
 </body>
 </html>

@@ -326,6 +326,7 @@ function updatePrompt() {
   const legacy = document.getElementById('prompt-output');
   if (legacy) legacy.textContent = lesMd + '\n\n---\n\n' + mattisMd;
 }
+window.updatePrompt = updatePrompt;
 
 function copyMd(btnId, srcId, label) {
   const btn = document.getElementById(btnId);
