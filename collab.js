@@ -7,12 +7,24 @@ import { WebsocketProvider } from 'https://cdn.jsdelivr.net/npm/y-websocket@2.0.
 import { IndexeddbPersistence } from 'https://cdn.jsdelivr.net/npm/y-indexeddb@9.0.12/+esm';
 
 const SYNC_FIELDS = [
+  // Person names
+  'person-a','person-b',
+  // Contract — A
   'project-a','c-goal-a','c-dod-a','c-nongoals-a','c-risk-a','c-impl-a',
+  // Contract — B
   'project-b','c-goal-b','c-dod-b','c-nongoals-b','c-risk-b','c-impl-b',
+  // Retro
   'retro-experiment',
   'retro-well-a','retro-improve-a','retro-actions-a','retro-carryover-a',
-  'retro-well-b','retro-improve-b','retro-actions-b','retro-carryover-b'
+  'retro-well-b','retro-improve-b','retro-actions-b','retro-carryover-b',
+  // Review
+  'r-shipped-desc','r-demo-link','r-feedback',
+  // Standup
+  'su-who','su-progress','su-next','su-blockers'
 ];
+
+// Non-text shared state keys (prefixed with __ to avoid clashing with DOM ids)
+const STATE_KEYS = ['__mode','__strict','__checklist','__sprint','__history','__log'];
 
 const COLORS = ['#6366f1','#10b981','#f59e0b','#f43f5e','#06b6d4','#a78bfa','#ec4899','#84cc16'];
 
@@ -119,16 +131,28 @@ async function connect(roomCode, userName, serverUrl) {
 
   await persistence.whenSynced;
 
-  // Apply Yjs state → DOM
+  // Apply Yjs text fields → DOM
   SYNC_FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const v = ymap.get(id);
     if (typeof v === 'string') el.value = v;
   });
-  window.updatePrompt?.();
 
-  // DOM input → Yjs (replace previous listeners by using a dedicated handler)
+  // Apply Yjs non-text state → app
+  const initialState = {};
+  STATE_KEYS.forEach(k => {
+    const v = ymap.get(k);
+    if (v !== undefined) initialState[k.slice(2)] = v;
+  });
+  if (Object.keys(initialState).length) {
+    window.msApplyState?.(initialState);
+  }
+
+  window.updatePrompt?.();
+  window.msRefreshLabels?.();
+
+  // DOM input → Yjs (text fields)
   SYNC_FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if (!el || el._collabBound) return;
@@ -138,9 +162,16 @@ async function connect(roomCode, userName, serverUrl) {
     });
   });
 
-  // Yjs → DOM (remote updates)
+  // Yjs → DOM / app (remote updates)
   ymap.observe(event => {
+    const remoteState = {};
+    let stateChanged = false;
     event.keysChanged.forEach(key => {
+      if (key.startsWith('__')) {
+        remoteState[key.slice(2)] = ymap.get(key);
+        stateChanged = true;
+        return;
+      }
       const el = document.getElementById(key);
       if (!el) return;
       const v = ymap.get(key);
@@ -155,7 +186,9 @@ async function connect(roomCode, userName, serverUrl) {
         }
       }
     });
+    if (stateChanged) window.msApplyState?.(remoteState);
     window.updatePrompt?.();
+    window.msRefreshLabels?.();
   });
 
   // Awareness (presence) — set on both providers
@@ -231,5 +264,32 @@ if (currentRoom && currentName) {
   updateBar(false, 0, []);
 }
 
-// Expose for debugging
-window.msCollab = { connect, disconnect, get ydoc() { return ydoc; }, get provider() { return provider; } };
+// Push non-text shared state into the Y.Doc so the other peer sees it.
+// Accepts an object like { mode, strict, checklist, sprint, history, log }.
+// Only keys present in the object are written.
+function pushState(state) {
+  if (!ymap || !state) return;
+  // Use a transaction with a local origin tag so our own observe handler
+  // can ignore self-originated changes if needed (currently we just compare
+  // values in the observer to avoid loops).
+  ydoc.transact(() => {
+    Object.keys(state).forEach(k => {
+      const key = '__' + k;
+      const newVal = state[k];
+      const cur = ymap.get(key);
+      // Avoid no-op writes (cheap deep-equal via JSON)
+      if (JSON.stringify(cur) === JSON.stringify(newVal)) return;
+      ymap.set(key, newVal);
+    });
+  }, 'local');
+}
+
+// Expose
+window.msCollab = {
+  connect,
+  disconnect,
+  pushState,
+  get connected() { return (provider?.connected || false) || (wsProvider?.wsconnected || false); },
+  get ydoc() { return ydoc; },
+  get provider() { return provider; }
+};

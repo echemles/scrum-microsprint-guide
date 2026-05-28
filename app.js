@@ -13,7 +13,28 @@ if (!isFinite(tid) || tid < 1) tid = 1;
 let currentMode = sprint?.mode || 'build';
 let timerInterval = null;
 
-function save() { SS('ms-sprint', sprint); SS('ms-tasks', tasks); SS('ms-history', history); SS('ms-log', eventLog); }
+function save() {
+  SS('ms-sprint', sprint); SS('ms-tasks', tasks); SS('ms-history', history); SS('ms-log', eventLog);
+  pushSharedState();
+}
+
+// Push non-text state (mode, strict, checklist, sprint, history, log) to the
+// collab Y.Doc so the other peer sees it. Safe no-op when collab is disabled.
+function pushSharedState() {
+  if (suppressPush) return;
+  if (!window.msCollab?.pushState) return;
+  window.msCollab.pushState({
+    mode: currentMode,
+    strict: document.getElementById('strict-toggle')?.checked || false,
+    checklist: Array.from(document.querySelectorAll('#checklist input')).map(i => i.checked),
+    sprint,
+    history,
+    log: eventLog
+  });
+}
+
+// Guard so applying a remote state doesn't re-broadcast (would cause loops).
+let suppressPush = false;
 
 function toggleSprintSections() {
   document.body.classList.toggle('sprint-active', !!sprint);
@@ -772,6 +793,7 @@ function saveFormState() {
   state.learnOpen = !document.getElementById('learn-body')?.hidden;
   state.logOpen = !document.getElementById('event-log')?.hidden;
   SS(PERSIST_KEY, state);
+  pushSharedState();
 }
 
 function loadFormState() {
@@ -858,6 +880,64 @@ window.msResetAll = function() {
   if (!confirm('Clear ALL Microsprint data (sprints, tasks, history, forms)?')) return;
   ['ms-sprint','ms-tasks','ms-history','ms-log','ms-form-state','ms-timer-state'].forEach(k => localStorage.removeItem(k));
   location.reload();
+};
+
+// ===== COLLAB INBOUND =====
+// Called by collab.js when the other peer updates non-text shared state.
+// Apply incoming values to local state and re-render — but suppress pushing
+// back to the Y.Doc so we don't echo and create a loop.
+window.msApplyState = function(state) {
+  if (!state) return;
+  suppressPush = true;
+  try {
+    if (typeof state.mode === 'string' && state.mode !== currentMode && TIMELINES[state.mode]) {
+      setMode(state.mode);
+    }
+    if (typeof state.strict === 'boolean') {
+      const t = document.getElementById('strict-toggle');
+      if (t) t.checked = state.strict;
+    }
+    if (Array.isArray(state.checklist)) {
+      const boxes = document.querySelectorAll('#checklist input');
+      state.checklist.forEach((v, i) => { if (boxes[i]) boxes[i].checked = !!v; });
+      const n = document.querySelectorAll('#checklist input:checked').length;
+      const rp = document.getElementById('review-progress');
+      if (rp) rp.textContent = `${n} / 6 verified`;
+    }
+    if (state.sprint !== undefined) {
+      sprint = state.sprint;
+      SS('ms-sprint', sprint);
+      if (sprint && sprint.phase !== 'completed') {
+        activateSprint();
+      } else {
+        toggleSprintSections();
+        updateTopbar();
+      }
+    }
+    if (Array.isArray(state.history)) {
+      history = state.history;
+      SS('ms-history', history);
+      renderHistory();
+    }
+    if (Array.isArray(state.log)) {
+      eventLog = state.log;
+      SS('ms-log', eventLog);
+      renderEventLog();
+    }
+    // Persist mode/strict/checklist to local form-state too
+    saveFormState();
+  } finally {
+    suppressPush = false;
+  }
+};
+
+// Refresh anywhere person names appear in the UI (called by collab when
+// person-a / person-b come in via remote update).
+window.msRefreshLabels = function() {
+  updateOwnerSelects();
+  updatePrompt();
+  renderHistory();
+  renderStandups();
 };
 
 // ===== INIT =====
